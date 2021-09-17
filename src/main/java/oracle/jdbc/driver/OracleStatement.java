@@ -1,0 +1,3357 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by Fernflower decompiler)
+//
+
+package oracle.jdbc.driver;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.Vector;
+import oracle.jdbc.OracleResultSet.AuthorizationIndicator;
+import oracle.jdbc.dcn.DatabaseChangeRegistration;
+import oracle.jdbc.driver.OracleResultSet.ResultSetType;
+import oracle.jdbc.internal.OracleConnection;
+import oracle.jdbc.internal.OracleStatement.BindChecksumListener;
+import oracle.jdbc.internal.OracleStatement.SqlKind;
+import oracle.sql.ARRAY;
+import oracle.sql.BLOB;
+import oracle.sql.CLOB;
+
+abstract class OracleStatement extends GeneratedStatement implements oracle.jdbc.internal.OracleStatement, Wrappable<OracleStatementWrapper> {
+    byte[] defineBytes;
+    char[] defineChars;
+    short[] defineIndicators;
+    int[] returnParamMeta;
+    static final int PLAIN_STMT = 0;
+    static final int PREP_STMT = 1;
+    static final int CALL_STMT = 2;
+    static final int METADATALENGTH = 1;
+    static final int VALID_ROWS_UNINIT = -999;
+    static final byte EXECUTE_NONE = -1;
+    static final byte EXECUTE_QUERY = 1;
+    static final byte EXECUTE_UPDATE = 2;
+    static final byte EXECUTE_NORMAL = 3;
+    static final int DMLR_METADATA_PREFIX_SIZE = 3;
+    static final int DMLR_METADATA_NUM_OF_RETURN_PARAMS = 0;
+    static final int DMLR_METADATA_ROW_BIND_BYTES = 1;
+    static final int DMLR_METADATA_ROW_BIND_CHARS = 2;
+    static final int DMLR_METADATA_TYPE_OFFSET = 0;
+    static final int DMLR_METADATA_IS_CHAR_TYPE_OFFSET = 1;
+    static final int DMLR_METADATA_BIND_SIZE_OFFSET = 2;
+    static final int DMLR_METADATA_FORM_OF_USE_OFFSET = 3;
+    static final int DMLR_METADATA_PER_POSITION_SIZE = 4;
+    static final String SYS_ODCIVARCHAR2LIST = "SYS.ODCIVARCHAR2LIST";
+    static final ResultSetType DEFAULT_RESULT_SET_TYPE;
+    boolean closed;
+    protected boolean isComplete;
+    int cursorId;
+    int refCursorRowNumber;
+    ByteArray rowData;
+    ByteArray bindData;
+    int numberOfDefinePositions;
+    int definesBatchSize;
+    boolean described;
+    boolean describedWithNames;
+    boolean executeDoneForDefines;
+    int rowsProcessed;
+    protected int validRows;
+    protected int storedRowCount;
+    protected int currentCapacity;
+    boolean isStreaming;
+    boolean isFetchStreams;
+    OracleStatement children;
+    OracleStatement parent;
+    OracleStatement nextChild;
+    OracleStatement next;
+    OracleStatement prev;
+    long c_state;
+    int numberOfBindPositions;
+    byte[] bindBytes;
+    char[] bindChars;
+    short[] bindIndicators;
+    int bindByteOffset;
+    int bindCharOffset;
+    int bindIndicatorOffset;
+    int bindByteSubRange;
+    int bindCharSubRange;
+    int bindIndicatorSubRange;
+    Accessor[] outBindAccessors;
+    InputStream[][] parameterStream;
+    Object[][] userStream;
+    int firstRowInBatch;
+    boolean hasIbtBind;
+    byte[] ibtBindBytes;
+    char[] ibtBindChars;
+    short[] ibtBindIndicators;
+    int ibtBindByteOffset;
+    int ibtBindCharOffset;
+    int ibtBindIndicatorOffset;
+    int ibtBindIndicatorSize;
+    OracleInputStream nextStream;
+    OracleResultSet currentResultSet;
+    ArrayDeque<OracleStatement> implicitResultSetStatements;
+    ArrayDeque<OracleResultSet> openImplicitResultSets;
+    Iterator<OracleStatement> implicitResultSetIterator;
+    boolean processEscapes;
+    boolean convertNcharLiterals;
+    int queryTimeout;
+    int maxFieldSize;
+    int maxRows;
+    int batch;
+    int numberOfExecutedElementsInBatch;
+    int currentRank;
+    boolean bsendBatchInProgress;
+    int[] batchRowsUpdatedArray;
+    int rowPrefetch;
+    int rowPrefetchInLastFetch;
+    int defaultRowPrefetch;
+    boolean rowPrefetchChanged;
+    int defaultLobPrefetchSize;
+    OracleSql sqlObject;
+    boolean needToParse;
+    boolean needToPrepareDefineBuffer;
+    boolean columnsDefinedByUser;
+    boolean gotLastBatch;
+    boolean clearParameters;
+    SqlKind sqlKind;
+    byte sqlKindByte;
+    boolean serverCursor;
+    boolean fixedString;
+    boolean noMoreUpdateCounts;
+    protected CancelLock cancelLock;
+    OracleStatementWrapper wrapper;
+    byte executionType;
+    ResultSetType userRsetType;
+    ResultSetType realRsetType;
+    boolean isRowidPrepended;
+    SQLWarning sqlWarning;
+    int cacheState;
+    int creationState;
+    boolean isOpen;
+    int statementType;
+    boolean columnSetNull;
+    boolean isDmlReturning;
+    boolean returnParamsFetched;
+    int rowsDmlReturned;
+    int numReturnParams;
+    boolean isAutoGeneratedKey;
+    AutoKeyInfo autoKeyInfo;
+    TimeZone defaultTimeZone;
+    String defaultTimeZoneName;
+    Calendar defaultCalendar;
+    Calendar gmtCalendar;
+    long inScn;
+    OraclePreparedStatement refreshStatement;
+    ByteBuffer[] nioBuffers;
+    Object[] lobPrefetchMetaData;
+    boolean hasStream;
+    byte[] tmpByteArray;
+    int sizeTmpByteArray;
+    byte[] tmpBindsByteArray;
+    boolean needToSendOalToFetch;
+    int[] definedColumnType;
+    int[] definedColumnSize;
+    int[] definedColumnFormOfUse;
+    T4CTTIoac[] oacdefSent;
+    int[] nbPostPonedColumns;
+    int[][] indexOfPostPonedColumn;
+    boolean aFetchWasDoneDuringDescribe;
+    boolean implicitDefineForLobPrefetchDone;
+    long checkSum;
+    boolean checkSumComputationFailure;
+    Vector m_batchItems;
+    ArrayList tempClobsToFree;
+    ArrayList tempBlobsToFree;
+    ArrayList oldTempClobsToFree;
+    ArrayList oldTempBlobsToFree;
+    NTFDCNRegistration registration;
+    String[] dcnTableName;
+    long dcnQueryId;
+    long localCheckSum;
+    BindChecksumListener bindChecksumListener;
+    boolean isCloseOnCompletion;
+    protected Object acProxy;
+    private static final String _Copyright_2007_Oracle_All_Rights_Reserved_;
+    public static final String BUILD_DATE = "Thu_Apr_04_15:09:24_PDT_2013";
+    public static final boolean TRACE = false;
+
+    abstract void doDescribe(boolean var1) throws SQLException;
+
+    abstract void executeForDescribe() throws SQLException;
+
+    abstract void executeForRows(boolean var1) throws SQLException;
+
+    protected abstract void fetch(int var1, boolean var2) throws SQLException;
+
+    abstract void doClose() throws SQLException;
+
+    abstract void closeQuery() throws SQLException;
+
+    public int cursorIfRefCursor() throws SQLException {
+        SQLException var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 1, "cursorIfRefCursor not implemented");
+        var1.fillInStackTrace();
+        throw var1;
+    }
+
+    void continueReadRow(int var1) throws SQLException {
+        SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 1, "continueReadRow is only implemented by the T4C statements.");
+        var2.fillInStackTrace();
+        throw var2;
+    }
+
+    void closeCursorOnPlainStatement() throws SQLException {
+    }
+
+    static final byte convertSqlKindEnumToByte(SqlKind var0) {
+        return var0.getKind();
+    }
+
+    static final SqlKind convertSqlKindByteToEnum(byte var0) {
+        return SqlKind.valueOf(var0);
+    }
+
+    OracleStatement(PhysicalConnection var1, int var2, int var3) throws SQLException {
+        this(var1, var2, var3, -1, -1);
+    }
+
+    OracleStatement(PhysicalConnection var1, int var2, int var3, int var4, int var5) throws SQLException {
+        super(var1);
+        this.rowData = null;
+        this.bindData = null;
+        this.described = false;
+        this.describedWithNames = false;
+        this.executeDoneForDefines = false;
+        this.currentCapacity = -1;
+        this.children = null;
+        this.parent = null;
+        this.nextChild = null;
+        this.hasIbtBind = false;
+        this.implicitResultSetStatements = null;
+        this.openImplicitResultSets = null;
+        this.implicitResultSetIterator = null;
+        this.numberOfExecutedElementsInBatch = -1;
+        this.bsendBatchInProgress = false;
+        this.rowPrefetchInLastFetch = -1;
+        this.sqlKind = SqlKind.SELECT;
+        this.sqlKindByte = 1;
+        this.fixedString = false;
+        this.noMoreUpdateCounts = false;
+        this.cancelLock = new CancelLock();
+        this.executionType = -1;
+        this.isRowidPrepended = false;
+        this.cacheState = 3;
+        this.creationState = 0;
+        this.isOpen = false;
+        this.statementType = 0;
+        this.columnSetNull = false;
+        this.isDmlReturning = false;
+        this.defaultTimeZone = null;
+        this.defaultTimeZoneName = null;
+        this.defaultCalendar = null;
+        this.gmtCalendar = null;
+        this.inScn = 0L;
+        this.refreshStatement = null;
+        this.nioBuffers = null;
+        this.lobPrefetchMetaData = null;
+        this.sizeTmpByteArray = 0;
+        this.needToSendOalToFetch = false;
+        this.definedColumnType = null;
+        this.definedColumnSize = null;
+        this.definedColumnFormOfUse = null;
+        this.oacdefSent = null;
+        this.nbPostPonedColumns = null;
+        this.indexOfPostPonedColumn = (int[][])null;
+        this.aFetchWasDoneDuringDescribe = false;
+        this.implicitDefineForLobPrefetchDone = false;
+        this.checkSum = 0L;
+        this.checkSumComputationFailure = false;
+        this.m_batchItems = null;
+        this.tempClobsToFree = null;
+        this.tempBlobsToFree = null;
+        this.oldTempClobsToFree = null;
+        this.oldTempBlobsToFree = null;
+        this.registration = null;
+        this.dcnTableName = null;
+        this.dcnQueryId = -1L;
+        this.localCheckSum = 0L;
+        this.isCloseOnCompletion = false;
+        this.connection.needLine();
+        this.connection.registerHeartbeat();
+        this.sqlObject = new OracleSql(this.connection.conversion);
+        this.processEscapes = this.connection.processEscapes;
+        this.convertNcharLiterals = this.connection.convertNcharLiterals;
+        this.gotLastBatch = false;
+        this.closed = false;
+        this.clearParameters = true;
+        this.serverCursor = false;
+        this.fixedString = this.connection.getDefaultFixedString();
+        this.rowPrefetchChanged = false;
+        this.rowPrefetch = var3;
+        this.currentCapacity = this.rowPrefetch;
+        this.defaultRowPrefetch = var3;
+        if (this.connection.getVersionNumber() >= 11000) {
+            this.defaultLobPrefetchSize = this.connection.defaultLobPrefetchSize;
+        } else {
+            this.defaultLobPrefetchSize = -1;
+        }
+
+        this.batch = var2;
+        this.needToParse = true;
+        this.needToPrepareDefineBuffer = true;
+        this.columnsDefinedByUser = false;
+        this.configureRowData();
+        this.userRsetType = ResultSetType.typeFor(var4, var5);
+        if (this.userRsetType == ResultSetType.UNKNOWN) {
+            this.userRsetType = DEFAULT_RESULT_SET_TYPE;
+            this.realRsetType = DEFAULT_RESULT_SET_TYPE;
+        } else {
+            this.realRsetType = ResultSetType.UNKNOWN;
+        }
+
+        this.isFetchStreams = this.connection.useFetchSizeWithLongColumn || this.userRsetType != DEFAULT_RESULT_SET_TYPE;
+        this.connection.addStatement(this);
+    }
+
+    public void setWrapper(OracleStatementWrapper var1) {
+        this.wrapper = var1;
+    }
+
+    public void setSnapshotSCN(long var1) throws SQLException {
+        this.doSetSnapshotSCN(var1);
+    }
+
+    void doSetSnapshotSCN(long var1) throws SQLException {
+        SQLException var3 = DatabaseError.createUnsupportedFeatureSqlException();
+        var3.fillInStackTrace();
+        throw var3;
+    }
+
+    protected void configureRowData() {
+        this.rowData = DynamicByteArray.createDynamicByteArray(this.connection.getBlockSource());
+        this.bindData = this.rowData;
+    }
+
+    void prepareAccessors() throws SQLException {
+        if (this.accessors == null) {
+            SQLException var4 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 21);
+            var4.fillInStackTrace();
+            throw var4;
+        } else {
+            int var1 = 0;
+
+            while(var1 < this.numberOfDefinePositions) {
+                Accessor var2 = this.accessors[var1];
+                if (var2 == null) {
+                    SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 21);
+                    var3.fillInStackTrace();
+                    throw var3;
+                }
+
+                switch(var2.internalType) {
+                    case 8:
+                    case 24:
+                        this.hasStream = true;
+                    default:
+                        ++var1;
+                }
+            }
+
+            if (this.streamList != null && !this.isFetchStreams) {
+                this.rowPrefetch = 1;
+            }
+
+            var1 = this.rowPrefetch;
+            this.definesBatchSize = var1;
+
+            for(int var5 = 0; var5 < this.numberOfDefinePositions; ++var5) {
+                Accessor var6 = this.accessors[var5];
+                var6.setCapacity(var1);
+            }
+
+        }
+    }
+
+    boolean checkAccessorsUsable() throws SQLException {
+        int var1 = this.accessors.length;
+        if (var1 < this.numberOfDefinePositions) {
+            return false;
+        } else {
+            boolean var2 = true;
+            boolean var3 = false;
+            boolean var4 = false;
+
+            for(int var5 = 0; var5 < this.numberOfDefinePositions; ++var5) {
+                Accessor var6 = this.accessors[var5];
+                if (var6 != null && var6.externalType != 0) {
+                    var3 = true;
+                } else {
+                    var2 = false;
+                }
+            }
+
+            if (var2) {
+                var4 = true;
+            } else {
+                if (var3) {
+                    SQLException var7 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 21);
+                    var7.fillInStackTrace();
+                    throw var7;
+                }
+
+                this.columnsDefinedByUser = false;
+            }
+
+            return var4;
+        }
+    }
+
+    void executeMaybeDescribe() throws SQLException {
+        boolean var1 = true;
+        if (this.rowPrefetchChanged) {
+            if (this.streamList == null && this.rowPrefetch != this.definesBatchSize) {
+                this.needToPrepareDefineBuffer = true;
+            }
+
+            this.rowPrefetchChanged = false;
+        }
+
+        if (!this.needToPrepareDefineBuffer) {
+            if (this.accessors == null) {
+                this.needToPrepareDefineBuffer = true;
+            } else if (this.columnsDefinedByUser) {
+                this.needToPrepareDefineBuffer = !this.checkAccessorsUsable();
+            }
+        }
+
+        boolean var2 = false;
+
+        try {
+            this.cancelLock.enterExecuting();
+            if (this.needToPrepareDefineBuffer) {
+                if (!this.columnsDefinedByUser) {
+                    this.executeForDescribe();
+                    var2 = true;
+                    if (this.aFetchWasDoneDuringDescribe) {
+                        var1 = false;
+                    }
+                }
+
+                if (this.needToPrepareDefineBuffer) {
+                    this.prepareAccessors();
+                }
+            }
+
+            int var3 = this.accessors.length;
+
+            for(int var4 = this.numberOfDefinePositions; var4 < var3; ++var4) {
+                Accessor var5 = this.accessors[var4];
+                if (var5 != null) {
+                    var5.rowSpaceIndicator = null;
+                }
+            }
+
+            if (var1) {
+                this.executeForRows(var2);
+            }
+
+            this.currentCapacity = this.rowPrefetch;
+            this.storedRowCount = this.validRows == -2 ? 1 : this.validRows;
+            this.indexOfFirstRow = 0;
+        } catch (SQLException var9) {
+            this.needToParse = true;
+            throw var9;
+        } finally {
+            this.cancelLock.exitExecuting();
+        }
+
+    }
+
+    void adjustGotLastBatch() {
+    }
+
+    protected void locationToPutBytes(Accessor var1, int var2, int var3) throws SQLException {
+        var1.setOffset(var2, this.rowData.length());
+    }
+
+    void doExecuteWithTimeout() throws SQLException {
+        if (this.realRsetType == ResultSetType.UNKNOWN) {
+            this.realRsetType = this.userRsetType;
+        }
+
+        try {
+            this.cleanOldTempLobs();
+            this.connection.registerHeartbeat();
+            this.rowsProcessed = 0;
+            SQLException var1;
+            if (this.sqlKind.isSELECT()) {
+                if (this.connection.j2ee13Compliant && this.executionType == 2) {
+                    var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 129);
+                    var1.fillInStackTrace();
+                    throw var1;
+                }
+
+                this.connection.needLine();
+                if (!this.isOpen) {
+                    this.connection.open(this);
+                    this.isOpen = true;
+                }
+
+                if (this.queryTimeout != 0) {
+                    try {
+                        this.connection.getTimeout().setTimeout((long)(this.queryTimeout * 1000), this);
+                        this.executeMaybeDescribe();
+                    } finally {
+                        this.connection.getTimeout().cancelTimeout();
+                    }
+                } else {
+                    this.executeMaybeDescribe();
+                }
+
+                this.checkValidRowsStatus();
+                if (this.serverCursor) {
+                    this.adjustGotLastBatch();
+                }
+            } else {
+                if (this.connection.j2ee13Compliant && !this.sqlKind.isPlsqlOrCall() && this.executionType == 1) {
+                    var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 128);
+                    var1.fillInStackTrace();
+                    throw var1;
+                }
+
+                ++this.currentRank;
+                if (this.currentRank >= this.batch) {
+                    try {
+                        this.connection.needLine();
+                        this.cancelLock.enterExecuting();
+                        if (!this.isOpen) {
+                            this.connection.open(this);
+                            this.isOpen = true;
+                        }
+
+                        if (this.queryTimeout != 0) {
+                            this.connection.getTimeout().setTimeout((long)(this.queryTimeout * 1000), this);
+                        }
+
+                        this.executeForRows(false);
+                    } catch (SQLException var14) {
+                        this.needToParse = true;
+                        if (this.batch > 1) {
+                            this.clearBatch();
+                            int[] var2;
+                            int var3;
+                            if (this.numberOfExecutedElementsInBatch != -1 && this.numberOfExecutedElementsInBatch < this.batch) {
+                                var2 = new int[this.numberOfExecutedElementsInBatch];
+
+                                for(var3 = 0; var3 < var2.length; ++var3) {
+                                    var2[var3] = -2;
+                                }
+                            } else {
+                                var2 = new int[this.batch];
+
+                                for(var3 = 0; var3 < var2.length; ++var3) {
+                                    var2[var3] = -3;
+                                }
+                            }
+
+                            BatchUpdateException var17 = DatabaseError.createBatchUpdateException(var14, var2.length, var2);
+                            var17.fillInStackTrace();
+                            throw var17;
+                        }
+
+                        this.resetCurrentRowBinders();
+                        throw var14;
+                    } finally {
+                        if (this.queryTimeout != 0) {
+                            this.connection.getTimeout().cancelTimeout();
+                        }
+
+                        this.currentRank = 0;
+                        this.cancelLock.exitExecuting();
+                        this.checkValidRowsStatus();
+                    }
+                }
+            }
+        } catch (SQLException var16) {
+            this.resetOnExceptionDuringExecute();
+            throw var16;
+        }
+
+        this.connection.registerHeartbeat();
+    }
+
+    void resetOnExceptionDuringExecute() {
+        this.needToParse = true;
+    }
+
+    void resetCurrentRowBinders() {
+    }
+
+    void open() throws SQLException {
+        if (!this.isOpen) {
+            this.connection.needLine();
+            this.connection.open(this);
+            this.isOpen = true;
+        }
+
+    }
+
+    public ResultSet executeQuery(String var1) throws SQLException {
+        synchronized(this.connection) {
+            OracleResultSet var3 = null;
+            this.cleanUpBeforeExecute();
+            this.realRsetType = ResultSetType.UNKNOWN;
+
+            try {
+                this.executionType = 1;
+                this.noMoreUpdateCounts = false;
+                this.ensureOpen();
+                this.checkIfJdbcBatchExists();
+                this.sendBatch();
+                this.hasStream = false;
+                this.sqlObject.initialize(var1);
+                this.sqlKind = this.sqlObject.getSqlKind();
+                this.needToParse = true;
+                this.prepareForNewResults(true, true, true);
+                SQLException var4;
+                if (this.userRsetType == DEFAULT_RESULT_SET_TYPE) {
+                    this.doExecuteWithTimeout();
+                    if (this.implicitResultSetStatements == null) {
+                        if (this.sqlKind.isPlsqlOrCall()) {
+                            var4 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 128);
+                            var4.fillInStackTrace();
+                            throw var4;
+                        }
+
+                        this.computeOffsetOfFirstUserColumn();
+                        this.currentResultSet = OracleResultSet.createResultSet(this);
+                        var3 = this.currentResultSet;
+                    }
+                } else {
+                    var3 = this.doScrollStmtExecuteQuery();
+                    if (var3 == null && this.implicitResultSetStatements == null) {
+                        if (this.sqlKind.isPlsqlOrCall()) {
+                            var4 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 128);
+                            var4.fillInStackTrace();
+                            throw var4;
+                        }
+
+                        this.computeOffsetOfFirstUserColumn();
+                        this.currentResultSet = OracleResultSet.createResultSet(this);
+                        var3 = this.currentResultSet;
+                    }
+                }
+            } finally {
+                this.executionType = -1;
+            }
+
+            return var3;
+        }
+    }
+
+    public void closeWithKey(String var1) throws SQLException {
+        SQLException var2 = DatabaseError.createUnsupportedFeatureSqlException();
+        var2.fillInStackTrace();
+        throw var2;
+    }
+
+    public void close() throws SQLException {
+        synchronized(this.connection) {
+            this.closeOrCache((String)null);
+        }
+    }
+
+    void closeWrapper() throws SQLException {
+        if (this.wrapper != null) {
+            this.wrapper.beClosed();
+        }
+
+    }
+
+    protected void closeOrCache(String var1) throws SQLException {
+        if (!this.closed) {
+            if (this.connection.lifecycle == 2) {
+                this.connection.needLineUnchecked();
+            } else {
+                this.connection.needLine();
+            }
+
+            if (this.statementType != 0 && this.cacheState != 0 && this.cacheState != 3 && this.connection.isStatementCacheInitialized()) {
+                if (var1 == null) {
+                    if (this.connection.getImplicitCachingEnabled()) {
+                        this.connection.cacheImplicitStatement((OraclePreparedStatement)this, this.sqlObject.getOriginalSql(), this.statementType, this.userRsetType);
+                    } else {
+                        this.cacheState = 0;
+                        this.hardClose();
+                    }
+                } else if (this.connection.getExplicitCachingEnabled()) {
+                    this.connection.cacheExplicitStatement((OraclePreparedStatement)this, var1);
+                } else {
+                    this.cacheState = 0;
+                    this.hardClose();
+                }
+            } else {
+                this.hardClose();
+            }
+
+        }
+    }
+
+    protected void hardClose() throws SQLException {
+        this.hardClose(true);
+    }
+
+    private void hardClose(boolean var1) throws SQLException {
+        this.alwaysOnClose();
+        this.describedWithNames = false;
+        this.described = false;
+        this.connection.removeStatement(this);
+        this.clearDefines();
+        if (this.isOpen && var1 && (this.connection.lifecycle == 1 || this.connection.lifecycle == 16 || this.connection.lifecycle == 2)) {
+            this.connection.registerHeartbeat();
+            this.doClose();
+            this.isOpen = false;
+            if (this.refreshStatement != null) {
+                this.refreshStatement.close();
+            }
+        }
+
+        this.sqlObject = null;
+    }
+
+    protected void alwaysOnClose() throws SQLException {
+        OracleStatement var2;
+        if (this.implicitResultSetStatements != null) {
+            Iterator var1 = this.implicitResultSetStatements.iterator();
+
+            while(var1.hasNext()) {
+                var2 = (OracleStatement)var1.next();
+                var2.close();
+            }
+
+            if (this.openImplicitResultSets != null) {
+                var1 = this.openImplicitResultSets.iterator();
+
+                while(var1.hasNext()) {
+                    OracleResultSet var4 = (OracleResultSet)var1.next();
+                    var4.close();
+                }
+            }
+        }
+
+        for(OracleStatement var3 = this.children; var3 != null; var3 = var2) {
+            var2 = var3.nextChild;
+            var3.close();
+        }
+
+        if (this.parent != null) {
+            this.parent.removeChild(this);
+        }
+
+        this.closed = true;
+        if (this.connection != null && (this.connection.lifecycle == 1 || this.connection.lifecycle == 2) && this.currentResultSet != null) {
+            this.currentResultSet.doneFetchingRows(false);
+            this.currentResultSet.close();
+            this.currentResultSet = null;
+        }
+
+        this.sqlWarning = null;
+        this.m_batchItems = null;
+    }
+
+    void closeLeaveCursorOpen() throws SQLException {
+        synchronized(this.connection) {
+            if (!this.closed) {
+                this.hardClose(false);
+            }
+        }
+    }
+
+    public int executeUpdate(String var1) throws SQLException {
+        synchronized(this.connection) {
+            this.cleanUpBeforeExecute();
+            return this.executeUpdateInternal(var1);
+        }
+    }
+
+    int executeUpdateInternal(String var1) throws SQLException {
+        int var2;
+        try {
+            if (this.executionType == -1) {
+                this.executionType = 2;
+            }
+
+            this.noMoreUpdateCounts = false;
+            this.ensureOpen();
+            this.checkIfJdbcBatchExists();
+            this.sendBatch();
+            this.hasStream = false;
+            this.sqlObject.initialize(var1);
+            this.sqlKind = this.sqlObject.getSqlKind();
+            this.needToParse = true;
+            this.prepareForNewResults(true, true, true);
+            if (this.userRsetType == DEFAULT_RESULT_SET_TYPE) {
+                this.doExecuteWithTimeout();
+            } else {
+                this.doScrollStmtExecuteQuery();
+            }
+
+            var2 = this.validRows;
+        } finally {
+            this.executionType = -1;
+        }
+
+        return var2;
+    }
+
+    public boolean execute(String var1) throws SQLException {
+        synchronized(this.connection) {
+            this.cleanUpBeforeExecute();
+            return this.executeInternal(var1);
+        }
+    }
+
+    boolean executeInternal(String var1) throws SQLException {
+        boolean var2;
+        try {
+            this.executionType = 3;
+            this.checkSum = 0L;
+            this.checkSumComputationFailure = false;
+            this.noMoreUpdateCounts = false;
+            this.ensureOpen();
+            this.checkIfJdbcBatchExists();
+            this.sendBatch();
+            this.hasStream = false;
+            this.sqlObject.initialize(var1);
+            this.sqlKind = this.sqlObject.getSqlKind();
+            this.needToParse = true;
+            this.prepareForNewResults(true, true, true);
+            if (this.userRsetType == DEFAULT_RESULT_SET_TYPE) {
+                this.doExecuteWithTimeout();
+            } else {
+                this.doScrollStmtExecuteQuery();
+            }
+
+            var2 = this.sqlKind.isSELECT() || this.implicitResultSetStatements != null;
+        } finally {
+            this.executionType = -1;
+        }
+
+        return var2;
+    }
+
+    int getNumberOfColumns() throws SQLException {
+        if (this.serverCursor) {
+            return this.accessors == null ? 0 : this.accessors.length;
+        } else if (this.sqlKind.isSELECT()) {
+            this.ensureOpen();
+            if (!this.described) {
+                synchronized(this.connection) {
+                    this.doDescribe(false);
+                    this.described = true;
+                }
+            }
+
+            return this.numberOfDefinePositions - (1 + this.offsetOfFirstUserColumn);
+        } else {
+            return this.numReturnParams;
+        }
+    }
+
+    Accessor[] getDescription() throws SQLException {
+        this.ensureOpen();
+        if (!this.described) {
+            synchronized(this.connection) {
+                this.doDescribe(false);
+                this.described = true;
+            }
+        }
+
+        return this.accessors;
+    }
+
+    Accessor[] getDescriptionWithNames() throws SQLException {
+        this.ensureOpen();
+        if (!this.describedWithNames) {
+            synchronized(this.connection) {
+                this.doDescribe(true);
+                this.described = true;
+                this.describedWithNames = true;
+            }
+        }
+
+        return this.accessors;
+    }
+
+    public SqlKind getSqlKind() throws SQLException {
+        return this.sqlObject.getSqlKind();
+    }
+
+    public void clearDefines() throws SQLException {
+        synchronized(this.connection) {
+            this.freeLine();
+            this.streamList = null;
+            this.columnsDefinedByUser = false;
+            this.needToPrepareDefineBuffer = true;
+            this.numberOfDefinePositions = 0;
+            this.definesBatchSize = 0;
+            this.described = false;
+            this.describedWithNames = false;
+            this.cleanupDefines();
+        }
+    }
+
+    void reparseOnRedefineIfNeeded() throws SQLException {
+    }
+
+    void defineColumnTypeInternal(int var1, int var2, int var3, boolean var4, String var5) throws SQLException {
+        this.defineColumnTypeInternal(var1, var2, var3, (short)1, var4, var5);
+    }
+
+    void defineColumnTypeInternal(int var1, int var2, int var3, short var4, boolean var5, String var6) throws SQLException {
+        if (!this.connection.disableDefinecolumntype) {
+            SQLException var13;
+            if (var1 < 1) {
+                var13 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 3);
+                var13.fillInStackTrace();
+                throw var13;
+            } else if (var2 == 0) {
+                var13 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 4);
+                var13.fillInStackTrace();
+                throw var13;
+            } else {
+                int var7 = var1 - 1;
+                int var8 = this.maxFieldSize > 0 ? this.maxFieldSize : -1;
+                SQLException var15;
+                if (!var5) {
+                    if (var3 < 0) {
+                        var15 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 53);
+                        var15.fillInStackTrace();
+                        throw var15;
+                    }
+
+                    if (var2 != 2005 && var2 != 2004) {
+                        var8 = -1;
+                    } else if (var8 == -1 && var3 > 0 || var8 > 0 && var3 < var8) {
+                        var8 = var3;
+                    }
+                }
+
+                if (this.currentResultSet != null && !this.currentResultSet.closed) {
+                    var15 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 28);
+                    var15.fillInStackTrace();
+                    throw var15;
+                } else {
+                    if (!this.columnsDefinedByUser) {
+                        this.clearDefines();
+                        this.columnsDefinedByUser = true;
+                    }
+
+                    if (this.numberOfDefinePositions < var1) {
+                        if (this.accessors == null || this.accessors.length < var1) {
+                            Accessor[] var9 = new Accessor[var1 << 1];
+                            if (this.accessors != null) {
+                                System.arraycopy(this.accessors, 0, var9, 0, this.numberOfDefinePositions);
+                            }
+
+                            this.accessors = var9;
+                        }
+
+                        this.numberOfDefinePositions = var1;
+                    }
+
+                    switch(var2) {
+                        case -16:
+                        case -15:
+                        case -9:
+                        case 2011:
+                            var4 = 2;
+                            break;
+                        case 2009:
+                            var6 = "SYS.XMLTYPE";
+                    }
+
+                    int var14 = this.getInternalType(var2);
+                    if ((var14 == 109 || var14 == 111) && (var6 == null || var6.equals(""))) {
+                        SQLException var16 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 60, "Invalid arguments");
+                        var16.fillInStackTrace();
+                        throw var16;
+                    } else {
+                        Accessor var10 = this.accessors[var7];
+                        boolean var11 = true;
+                        if (var10 != null) {
+                            int var12 = var10.useForDataAccessIfPossible(var14, var2, var8, var6);
+                            if (var12 == 0) {
+                                var4 = var10.formOfUse;
+                                var10 = null;
+                                this.reparseOnRedefineIfNeeded();
+                            } else if (var12 == 1) {
+                                var10 = null;
+                                this.reparseOnRedefineIfNeeded();
+                            } else if (var12 == 2) {
+                                var11 = false;
+                            }
+                        }
+
+                        if (var11) {
+                            this.needToPrepareDefineBuffer = true;
+                        }
+
+                        if (var10 == null) {
+                            this.accessors[var7] = this.allocateAccessor(var14, var2, var1, var8, var4, var6, false);
+                            this.described = false;
+                            this.describedWithNames = false;
+                        }
+
+                        this.executeDoneForDefines = false;
+                    }
+                }
+            }
+        }
+    }
+
+    Accessor allocateAccessor(int var1, int var2, int var3, int var4, short var5, String var6, boolean var7) throws SQLException {
+        SQLException var9;
+        switch(var1) {
+            case 2:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new NumberAccessor(this, var4, var5, var2, var7);
+            case 6:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new VarnumAccessor(this, var4, var5, var2, var7);
+            case 8:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                } else if (!var7) {
+                    return new LongAccessor(this, var3, var4, var5, var2);
+                }
+            case 1:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new VarcharAccessor(this, var4, var5, var2, var7);
+            case 12:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new DateAccessor(this, var4, var5, var2, var7);
+            case 24:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                } else if (!var7) {
+                    return new LongRawAccessor(this, var3, var4, var5, var2);
+                }
+            case 23:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                } else {
+                    if (var7) {
+                        return new OutRawAccessor(this, var4, var5, var2);
+                    }
+
+                    return new RawAccessor(this, var4, var5, var2, false);
+                }
+            case 96:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new CharAccessor(this, var4, var5, var2, var7);
+            case 100:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new BinaryFloatAccessor(this, var4, var5, var2, var7);
+            case 101:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new BinaryDoubleAccessor(this, var4, var5, var2, var7);
+            case 102:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new ResultSetAccessor(this, var4, var5, var2, var7);
+            case 104:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                } else {
+                    if (this.sqlKind == SqlKind.CALL_BLOCK) {
+                        byte var10 = 18;
+                        VarcharAccessor var15 = new VarcharAccessor(this, var10, var5, var2, var7);
+                        var15.definedColumnType = -8;
+                        return var15;
+                    }
+
+                    return new RowidAccessor(this, var4, var5, var2, var7);
+                }
+            case 109:
+                if (var6 == null) {
+                    if (var7) {
+                        var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                        var9.fillInStackTrace();
+                        throw var9;
+                    }
+
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 60, "Unable to resolve type \"null\"");
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                NamedTypeAccessor var14 = new NamedTypeAccessor(this, var6, var5, var2, var7);
+                var14.initMetadata();
+                return var14;
+            case 111:
+                if (var6 == null) {
+                    if (var7) {
+                        var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                        var9.fillInStackTrace();
+                        throw var9;
+                    }
+
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 60, "Unable to resolve type \"null\"");
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                RefTypeAccessor var13 = new RefTypeAccessor(this, var6, var5, var2, var7);
+                var13.initMetadata();
+                return var13;
+            case 112:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                ClobAccessor var12 = new ClobAccessor(this, -1, var5, var2, var7);
+                return var12;
+            case 113:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                BlobAccessor var11 = new BlobAccessor(this, -1, var5, var2, var7);
+                return var11;
+            case 114:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                BfileAccessor var8 = new BfileAccessor(this, -1, var5, var2, var7);
+                return var8;
+            case 180:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new TimestampAccessor(this, var4, var5, var2, var7);
+            case 181:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new TimestamptzAccessor(this, var4, var5, var2, var7);
+            case 182:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new IntervalymAccessor(this, var4, var5, var2, var7);
+            case 183:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new IntervaldsAccessor(this, var4, var5, var2, var7);
+            case 231:
+                if (var7 && var6 != null) {
+                    var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 12, "sqlType=" + var2);
+                    var9.fillInStackTrace();
+                    throw var9;
+                }
+
+                return new TimestampltzAccessor(this, var4, var5, var2, var7);
+            case 995:
+                var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 89);
+                var9.fillInStackTrace();
+                throw var9;
+            default:
+                var9 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 4);
+                var9.fillInStackTrace();
+                throw var9;
+        }
+    }
+
+    void setDriverSpecificData(Accessor var1) {
+    }
+
+    public void defineColumnType(int var1, int var2) throws SQLException {
+        synchronized(this.connection) {
+            this.defineColumnTypeInternal(var1, var2, -1, true, (String)null);
+        }
+    }
+
+    public void defineColumnType(int var1, int var2, int var3) throws SQLException {
+        this.defineColumnTypeInternal(var1, var2, var3, false, (String)null);
+    }
+
+    public void defineColumnType(int var1, int var2, int var3, short var4) throws SQLException {
+        this.defineColumnTypeInternal(var1, var2, var3, var4, false, (String)null);
+    }
+
+    /** @deprecated */
+    public void defineColumnTypeBytes(int var1, int var2, int var3) throws SQLException {
+        synchronized(this.connection) {
+            this.defineColumnTypeInternal(var1, var2, var3, false, (String)null);
+        }
+    }
+
+    /** @deprecated */
+    public void defineColumnTypeChars(int var1, int var2, int var3) throws SQLException {
+        this.defineColumnTypeInternal(var1, var2, var3, false, (String)null);
+    }
+
+    public void defineColumnType(int var1, int var2, String var3) throws SQLException {
+        synchronized(this.connection) {
+            this.defineColumnTypeInternal(var1, var2, -1, true, var3);
+        }
+    }
+
+    void setCursorId(int var1) throws SQLException {
+        this.cursorId = var1;
+    }
+
+    void setPrefetchInternal(int var1, boolean var2, boolean var3) throws SQLException {
+        SQLException var4;
+        if (var2) {
+            if (var1 <= 0) {
+                var4 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 20);
+                var4.fillInStackTrace();
+                throw var4;
+            }
+        } else {
+            if (var1 < 0) {
+                var4 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68, "setFetchSize");
+                var4.fillInStackTrace();
+                throw var4;
+            }
+
+            if (var1 == 0) {
+                var1 = this.connection.getDefaultRowPrefetch();
+            }
+        }
+
+        if (var3) {
+            if (var1 != this.defaultRowPrefetch) {
+                this.defaultRowPrefetch = var1;
+                if (this.currentResultSet == null || this.currentResultSet.closed) {
+                    this.rowPrefetchChanged = true;
+                }
+            }
+        } else if (var1 != this.rowPrefetch && this.streamList == null) {
+            this.rowPrefetch = var1;
+            this.rowPrefetchChanged = true;
+        }
+
+    }
+
+    public void setRowPrefetch(int var1) throws SQLException {
+        synchronized(this.connection) {
+            this.setPrefetchInternal(var1, true, true);
+        }
+    }
+
+    public void setLobPrefetchSize(int var1) throws SQLException {
+        synchronized(this.connection) {
+            if (var1 < -1) {
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 267);
+                var3.fillInStackTrace();
+                throw var3;
+            } else {
+                this.defaultLobPrefetchSize = var1;
+            }
+        }
+    }
+
+    public int getLobPrefetchSize() throws SQLException {
+        return this.defaultLobPrefetchSize;
+    }
+
+    int getPrefetchInternal(boolean var1) {
+        int var2 = var1 ? this.defaultRowPrefetch : this.rowPrefetch;
+        return var2;
+    }
+
+    public int getRowPrefetch() {
+        synchronized(this.connection) {
+            return this.getPrefetchInternal(true);
+        }
+    }
+
+    public void setFixedString(boolean var1) {
+        this.fixedString = var1;
+    }
+
+    public boolean getFixedString() {
+        return this.fixedString;
+    }
+
+    void check_row_prefetch_changed() throws SQLException {
+        if (this.rowPrefetchChanged) {
+            if (this.streamList == null) {
+                this.prepareAccessors();
+                this.needToPrepareDefineBuffer = true;
+            }
+
+            this.rowPrefetchChanged = false;
+        }
+
+    }
+
+    void setDefinesInitialized(boolean var1) {
+    }
+
+    void printState(String var1) throws SQLException {
+    }
+
+    void checkValidRowsStatus() throws SQLException {
+        if (this.validRows == -2) {
+            this.validRows = 1;
+            this.connection.holdLine(this);
+
+            for(OracleInputStream var1 = this.streamList; var1 != null; var1 = var1.nextStream) {
+                if (var1.hasBeenOpen) {
+                    var1 = var1.accessor.initForNewRow();
+                }
+
+                var1.closed = false;
+                var1.hasBeenOpen = true;
+            }
+
+            this.nextStream = this.streamList;
+        } else if (this.sqlKind.isSELECT()) {
+            if (this.validRows < this.rowPrefetch) {
+                this.gotLastBatch = true;
+            }
+        } else if (!this.sqlKind.isPlsqlOrCall()) {
+            this.rowsProcessed = this.validRows;
+        }
+
+    }
+
+    void cleanupDefines() {
+        if (this.accessors != null) {
+            for(int var1 = 0; var1 < this.accessors.length; ++var1) {
+                this.accessors[var1] = null;
+            }
+        }
+
+        this.accessors = null;
+        if (this.rowData != null) {
+            this.rowData.free();
+        }
+
+    }
+
+    public int getMaxFieldSize() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            return this.maxFieldSize;
+        }
+    }
+
+    public void setMaxFieldSize(int var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            if (var1 < 0) {
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+                var3.fillInStackTrace();
+                throw var3;
+            } else {
+                this.maxFieldSize = var1;
+            }
+        }
+    }
+
+    public int getMaxRows() throws SQLException {
+        this.ensureOpen();
+        return this.maxRows;
+    }
+
+    public void setMaxRows(int var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            if (var1 < 0) {
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+                var3.fillInStackTrace();
+                throw var3;
+            } else {
+                this.maxRows = var1;
+            }
+        }
+    }
+
+    public void setEscapeProcessing(boolean var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            this.processEscapes = var1;
+        }
+    }
+
+    public int getQueryTimeout() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            return this.queryTimeout;
+        }
+    }
+
+    public void setQueryTimeout(int var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            if (var1 < 0) {
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+                var3.fillInStackTrace();
+                throw var3;
+            } else {
+                this.queryTimeout = var1;
+            }
+        }
+    }
+
+    public void cancel() throws SQLException {
+        this.ensureOpen();
+        this.doCancel();
+    }
+
+    boolean doCancel() throws SQLException {
+        boolean var1 = false;
+        if (this.closed) {
+            return var1;
+        } else {
+            if (this.connection.statementHoldingLine != null) {
+                this.freeLine();
+            } else {
+                if (!this.cancelLock.enterCanceling()) {
+                    return var1;
+                }
+
+                try {
+                    var1 = true;
+                    this.connection.cancelOperationOnServer(true);
+                } finally {
+                    this.cancelLock.exitCanceling();
+                }
+            }
+
+            for(OracleStatement var2 = this.children; var2 != null; var2 = var2.nextChild) {
+                var1 = var1 || var2.doCancel();
+            }
+
+            this.connection.releaseLineForCancel();
+            return var1;
+        }
+    }
+
+    public SQLWarning getWarnings() throws SQLException {
+        this.ensureOpen();
+        return this.sqlWarning;
+    }
+
+    public void clearWarnings() throws SQLException {
+        this.ensureOpen();
+        this.sqlWarning = null;
+    }
+
+    void foundPlsqlCompilerWarning() throws SQLException {
+        SQLWarning var1 = DatabaseError.addSqlWarning(this.sqlWarning, "Found Plsql compiler warnings.", 24439);
+        if (this.sqlWarning != null) {
+            this.sqlWarning.setNextWarning(var1);
+        } else {
+            this.sqlWarning = var1;
+        }
+
+    }
+
+    public void setCursorName(String var1) throws SQLException {
+        SQLException var2 = DatabaseError.createUnsupportedFeatureSqlException();
+        var2.fillInStackTrace();
+        throw var2;
+    }
+
+    public ResultSet getResultSet() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            if (this.implicitResultSetStatements != null) {
+                if (this.currentResultSet != null) {
+                    return this.currentResultSet;
+                } else {
+                    SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 283);
+                    var2.fillInStackTrace();
+                    throw var2;
+                }
+            } else if (this.sqlKind.isSELECT()) {
+                if (this.currentResultSet == null) {
+                    this.computeOffsetOfFirstUserColumn();
+                    this.currentResultSet = OracleResultSet.createResultSet(this);
+                }
+
+                return this.currentResultSet;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public int getUpdateCount() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            int var2 = -1;
+            switch(this.sqlKind) {
+                case UNINITIALIZED:
+                case SELECT_FOR_UPDATE:
+                case SELECT:
+                default:
+                    break;
+                case ALTER_SESSION:
+                case OTHER:
+                    if (!this.noMoreUpdateCounts) {
+                        var2 = this.rowsProcessed;
+                    }
+
+                    this.noMoreUpdateCounts = true;
+                    break;
+                case PLSQL_BLOCK:
+                case CALL_BLOCK:
+                    this.noMoreUpdateCounts = true;
+                    break;
+                case DELETE:
+                case INSERT:
+                case MERGE:
+                case UPDATE:
+                    if (!this.noMoreUpdateCounts) {
+                        var2 = this.rowsProcessed;
+                    }
+
+                    this.noMoreUpdateCounts = true;
+            }
+
+            return var2;
+        }
+    }
+
+    public boolean getMoreResults() throws SQLException {
+        this.ensureOpen();
+        return this.getMoreResults(1);
+    }
+
+    public int sendBatch() throws SQLException {
+        return 0;
+    }
+
+    protected void increaseCapacity(int var1) {
+        if (this.storedRowCount + var1 > this.currentCapacity) {
+            int var2;
+            if (this.currentCapacity < 1024) {
+                var2 = this.currentCapacity * 4;
+            }
+
+            if (this.currentCapacity < 16384) {
+                var2 = (int)((double)this.currentCapacity * 1.5D);
+            } else {
+                var2 = (int)((double)this.currentCapacity * 1.2D);
+            }
+
+            var2 = Math.max(this.storedRowCount + var1, var2);
+            var2 = (var2 / this.rowPrefetch + 1) * this.rowPrefetch;
+            Accessor[] var3 = this.accessors;
+            int var4 = var3.length;
+
+            for(int var5 = 0; var5 < var4; ++var5) {
+                Accessor var6 = var3[var5];
+                if (var6 != null) {
+                    var6.setCapacity(var2);
+                }
+            }
+
+            this.currentCapacity = var2;
+        }
+
+        assert this.currentCapacity >= this.storedRowCount + var1 : "currentCapacity: " + this.currentCapacity + " storedRowCount: " + this.storedRowCount + ", numberOfRows: " + var1;
+
+    }
+
+    protected void drainStreams() throws SQLException {
+        if (this.streamList != null) {
+            for(; this.nextStream != null; this.nextStream = this.nextStream.nextStream) {
+                try {
+                    this.nextStream.close();
+                } catch (IOException var3) {
+                    SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), var3);
+                    var2.fillInStackTrace();
+                    throw var2;
+                }
+            }
+        }
+
+    }
+
+    int fetchMoreRows(int var1) throws SQLException {
+        assert !this.isComplete : "isComplete: " + this.isComplete;
+
+        if (this.realRsetType.isScrollable()) {
+            this.increaseCapacity(this.rowPrefetch);
+        }
+
+        this.check_row_prefetch_changed();
+        this.drainStreams();
+        this.connection.registerHeartbeat();
+        this.connection.needLine();
+
+        try {
+            this.cancelLock.enterExecuting();
+            this.fetch(this.realRsetType.isScrollable() ? var1 : 0, this.realRsetType.isScrollable());
+
+            assert this.validRows != -2 || this.rowPrefetch == 1 : "validRows: " + this.validRows + " rowPrefetch: " + this.rowPrefetch;
+        } finally {
+            this.cancelLock.exitExecuting();
+        }
+
+        this.checkValidRowsStatus();
+        if (this.realRsetType.isScrollable()) {
+            this.storedRowCount += this.validRows;
+        } else {
+            this.indexOfFirstRow += this.storedRowCount;
+            this.storedRowCount = this.validRows;
+        }
+
+        if (this.maxRows > 0 && this.indexOfFirstRow + this.storedRowCount >= this.maxRows) {
+            this.isComplete = true;
+        }
+
+        assert var1 - this.indexOfFirstRow >= 0 : "firstRow: " + var1 + " indexOfFirstRow: " + this.indexOfFirstRow;
+
+        assert var1 - this.indexOfFirstRow < this.currentCapacity : "firstRow: " + var1 + " indexOfFirstRow: " + this.indexOfFirstRow + " currentCapacity: " + this.currentCapacity;
+
+        assert this.validRows >= 0 : "validRows: " + this.validRows;
+
+        assert this.validRows > 0 || this.isComplete : "validRows: " + this.validRows + ", isComplete: " + this.isComplete;
+
+        return this.validRows;
+    }
+
+    boolean isComplete() throws SQLException {
+        return this.isComplete || this.implicitResultSetStatements == null && !this.serverCursor && !this.sqlObject.getSqlKind().isSELECT();
+    }
+
+    int storedRowCount() {
+        return this.storedRowCount;
+    }
+
+    int refreshRows(int var1, int var2) throws SQLException {
+        if (this.refreshStatement == null) {
+            this.refreshStatement = this.connection.prepareStatementInternal(this.sqlObject.getRefetchSql(), 1003, 1007);
+            this.refreshStatement.isRowidPrepended = true;
+            this.refreshStatement.isFetchStreams = true;
+            this.refreshStatement.copyDefines(this, var2);
+            this.copyBinds(this.refreshStatement, 1);
+        }
+
+        int var3 = var1 - 1 - this.indexOfFirstRow;
+        ARRAY var4 = this.connection.createARRAY("SYS.ODCIVARCHAR2LIST", this.getRowKeys(var3, var2));
+        this.refreshStatement.setArray(1, var4);
+        this.refreshStatement.setFetchSize(var2);
+        ResultSet var5 = null;
+
+        int var7;
+        try {
+            var5 = this.refreshStatement.executeQuery();
+            int var6 = 0;
+
+            for(var7 = 0; var5.next(); ++var7) {
+                assert var3 + var7 < this.storedRowCount : "destRow: " + var3 + " storedRowCount: " + this.storedRowCount;
+
+                if (this.accessors[0].getROWID(var3 + var7).equals(this.refreshStatement.accessors[0].getROWID(var7))) {
+                    ++var6;
+
+                    for(int var8 = 1; var8 < this.accessors.length; ++var8) {
+                        if (this.accessors[var8] != null) {
+                            this.accessors[var8].copyFrom(this.refreshStatement.accessors[var8], var7, var3 + var7);
+                        }
+                    }
+                }
+            }
+
+            var7 = var6;
+        } finally {
+            if (var5 != null) {
+                try {
+                    var5.close();
+                } catch (Exception var36) {
+                }
+            }
+
+            if (this.refreshStatement != null) {
+                try {
+                    this.refreshStatement.drainStreams();
+                    this.refreshStatement.close();
+                } catch (Exception var34) {
+                } finally {
+                    this.refreshStatement = null;
+                }
+            }
+
+        }
+
+        return var7;
+    }
+
+    protected String[] getRowKeys(int var1, int var2) throws SQLException {
+        ArrayList var3 = new ArrayList(var2);
+        int var4 = Math.min(var2, this.storedRowCount - var1);
+
+        for(int var5 = 0; var5 < var4; ++var5) {
+            var3.add(this.accessors[0].getString(var1 + var5));
+        }
+
+        return (String[])((String[])var3.toArray(new String[0]));
+    }
+
+    void removeRowFromCache(int var1) throws SQLException {
+        if (var1 < this.indexOfFirstRow) {
+            --this.indexOfFirstRow;
+        } else if (var1 >= this.indexOfFirstRow) {
+            assert var1 < this.indexOfFirstRow + this.storedRowCount : "row: " + var1 + " indexOfFirstRow: " + this.indexOfFirstRow + " storedRowCount: " + this.storedRowCount;
+
+            Accessor[] var2 = this.accessors;
+            int var3 = var2.length;
+
+            for(int var4 = 0; var4 < var3; ++var4) {
+                Accessor var5 = var2[var4];
+                if (var5 != null) {
+                    this.deleteRow(var5, var1 - this.indexOfFirstRow);
+                }
+            }
+
+            --this.storedRowCount;
+        }
+
+    }
+
+    void deleteRow(Accessor var1, int var2) throws SQLException {
+        var1.deleteRow(var2);
+    }
+
+    void prepareForNewResults(boolean var1, boolean var2, boolean var3) throws SQLException {
+        if (!this.closed) {
+            this.clearWarnings();
+        }
+
+        if (var3 && this.implicitResultSetStatements != null) {
+            Iterator var4 = this.implicitResultSetStatements.iterator();
+
+            while(var4.hasNext()) {
+                OracleStatement var5 = (OracleStatement)var4.next();
+                var5.close();
+            }
+
+            this.implicitResultSetStatements = null;
+            this.implicitResultSetIterator = null;
+            if (this.openImplicitResultSets != null) {
+                var4 = this.openImplicitResultSets.iterator();
+
+                while(var4.hasNext()) {
+                    OracleResultSet var6 = (OracleResultSet)var4.next();
+                    var6.close();
+                }
+
+                this.openImplicitResultSets = null;
+            }
+        }
+
+        this.closeAllStreams(var2);
+        if (this.currentResultSet != null) {
+            this.currentResultSet.close();
+            this.currentResultSet = null;
+        }
+
+        this.rowData.reset();
+        this.storedRowCount = 0;
+        this.indexOfFirstRow = 0;
+        this.isComplete = false;
+        this.offsetOfFirstUserColumn = -1;
+        this.checkSum = 0L;
+        this.checkSumComputationFailure = false;
+        this.validRows = 0;
+        this.batchRowsUpdatedArray = null;
+        this.gotLastBatch = false;
+        if (this.needToParse && !this.columnsDefinedByUser) {
+            if (var2 && this.numberOfDefinePositions != 0) {
+                this.numberOfDefinePositions = 0;
+            }
+
+            this.needToPrepareDefineBuffer = true;
+        }
+
+        if (var1 && this.rowPrefetch != this.defaultRowPrefetch && this.streamList == null) {
+            this.rowPrefetch = this.defaultRowPrefetch;
+            this.rowPrefetchChanged = true;
+        }
+
+    }
+
+    void closeAllStreams(boolean var1) throws SQLException {
+        this.drainStreams();
+        if (var1) {
+            OracleInputStream var2 = this.streamList;
+            OracleInputStream var3 = null;
+
+            for(this.streamList = null; var2 != null; var2 = var2.nextStream) {
+                if (!var2.hasBeenOpen) {
+                    if (var3 == null) {
+                        this.streamList = var2;
+                    } else {
+                        var3.nextStream = var2;
+                    }
+
+                    var3 = var2;
+                }
+            }
+        }
+
+    }
+
+    void reopenStreams() throws SQLException {
+        for(OracleInputStream var1 = this.streamList; var1 != null; var1 = var1.nextStream) {
+            if (var1.hasBeenOpen) {
+                var1 = var1.accessor.initForNewRow();
+            }
+
+            var1.closed = false;
+            var1.hasBeenOpen = true;
+        }
+
+        this.nextStream = this.streamList;
+    }
+
+    void endOfResultSet(boolean var1) throws SQLException {
+        if (!var1) {
+            this.prepareForNewResults(false, false, false);
+        }
+
+        this.clearDefines();
+        this.rowPrefetchInLastFetch = -1;
+    }
+
+    boolean wasNullValue(int var1) throws SQLException {
+        SQLException var2;
+        if (this.closed) {
+            var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 9, "wasNull");
+            var2.fillInStackTrace();
+            throw var2;
+        } else if (this.lastIndex < 0) {
+            var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 24);
+            var2.fillInStackTrace();
+            throw var2;
+        } else {
+            return this.isNull(var1, this.lastIndex);
+        }
+    }
+
+    boolean isNull(int var1, int var2) throws SQLException {
+        if (!this.sqlKind.isSELECT() && !this.isDmlReturning) {
+            assert var1 == this.currentRank : "rowIndex: " + var1 + " currentRank: " + this.currentRank;
+
+            return this.outBindAccessors[var2 - 1].isNull(this.currentRank);
+        } else {
+            return this.accessors[var2 + this.offsetOfFirstUserColumn].isNull(var1 - this.indexOfFirstRow);
+        }
+    }
+
+    int getColumnIndex(String var1) throws SQLException {
+        this.ensureOpen();
+        if (!this.describedWithNames) {
+            synchronized(this.connection) {
+                this.doDescribe(true);
+                this.described = true;
+                this.describedWithNames = true;
+            }
+        }
+
+        for(int var2 = 1 + this.offsetOfFirstUserColumn; var2 < this.numberOfDefinePositions; ++var2) {
+            if (this.accessors[var2].columnName.equalsIgnoreCase(var1)) {
+                return var2 - this.offsetOfFirstUserColumn;
+            }
+        }
+
+        SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 6);
+        var3.fillInStackTrace();
+        throw var3;
+    }
+
+    int getJDBCType(int var1) throws SQLException {
+        boolean var2 = false;
+        int var3;
+        switch(var1) {
+            case 1:
+                var3 = 12;
+                break;
+            case 6:
+                var3 = 2;
+                break;
+            case 8:
+                var3 = -1;
+                break;
+            case 12:
+                var3 = 91;
+                break;
+            case 23:
+                var3 = -2;
+                break;
+            case 24:
+                var3 = -4;
+                break;
+            case 96:
+                var3 = 1;
+                break;
+            case 100:
+                var3 = 100;
+                break;
+            case 101:
+                var3 = 101;
+                break;
+            case 102:
+                var3 = -10;
+                break;
+            case 104:
+                var3 = -8;
+                break;
+            case 109:
+                var3 = 2002;
+                break;
+            case 111:
+                var3 = 2006;
+                break;
+            case 112:
+                var3 = 2005;
+                break;
+            case 113:
+                var3 = 2004;
+                break;
+            case 114:
+                var3 = -13;
+                break;
+            case 180:
+                var3 = 93;
+                break;
+            case 181:
+                var3 = -101;
+                break;
+            case 182:
+                var3 = -103;
+                break;
+            case 183:
+                var3 = -104;
+                break;
+            case 231:
+                var3 = -102;
+                break;
+            case 995:
+                var3 = 0;
+                break;
+            case 998:
+                var3 = -14;
+                break;
+            case 999:
+                var3 = 999;
+                break;
+            default:
+                var3 = var1;
+        }
+
+        return var3;
+    }
+
+    int getInternalType(int var1) throws SQLException {
+        boolean var2 = false;
+        short var4;
+        switch(var1) {
+            case -104:
+                var4 = 183;
+                break;
+            case -103:
+                var4 = 182;
+                break;
+            case -102:
+                var4 = 231;
+                break;
+            case -101:
+                var4 = 181;
+                break;
+            case -100:
+            case 93:
+                var4 = 180;
+                break;
+            case -16:
+            case -1:
+                var4 = 8;
+                break;
+            case -15:
+            case -9:
+            case 12:
+                var4 = 1;
+                break;
+            case -14:
+                var4 = 998;
+                break;
+            case -13:
+                var4 = 114;
+                break;
+            case -10:
+                var4 = 102;
+                break;
+            case -8:
+                var4 = 104;
+                break;
+            case -7:
+            case -6:
+            case -5:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+                var4 = 6;
+                break;
+            case -4:
+                var4 = 24;
+                break;
+            case -3:
+            case -2:
+                var4 = 23;
+                break;
+            case 0:
+                var4 = 995;
+                break;
+            case 1:
+                var4 = 96;
+                break;
+            case 70:
+                var4 = 1;
+                break;
+            case 91:
+            case 92:
+                var4 = 12;
+                break;
+            case 100:
+                var4 = 100;
+                break;
+            case 101:
+                var4 = 101;
+                break;
+            case 999:
+                var4 = 999;
+                break;
+            case 2002:
+            case 2003:
+            case 2007:
+            case 2008:
+            case 2009:
+                var4 = 109;
+                break;
+            case 2004:
+                var4 = 113;
+                break;
+            case 2005:
+            case 2011:
+                var4 = 112;
+                break;
+            case 2006:
+                var4 = 111;
+                break;
+            default:
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 4, Integer.toString(var1));
+                var3.fillInStackTrace();
+                throw var3;
+        }
+
+        return var4;
+    }
+
+    ResultSetMetaData getResultSetMetaData() throws SQLException {
+        return new OracleResultSetMetaData(this.connection, this, this.offsetOfFirstUserColumn);
+    }
+
+    void describe() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            if (!this.described) {
+                this.doDescribe(false);
+            }
+
+        }
+    }
+
+    void freeLine() throws SQLException {
+        if (this.streamList != null) {
+            for(; this.nextStream != null; this.nextStream = this.nextStream.nextStream) {
+                try {
+                    this.nextStream.close();
+                } catch (IOException var3) {
+                    SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), var3);
+                    var2.fillInStackTrace();
+                    throw var2;
+                }
+            }
+        }
+
+    }
+
+    void closeUsedStreams(int var1) throws SQLException {
+        for(; this.nextStream != null && this.nextStream.columnIndex < var1; this.nextStream = this.nextStream.nextStream) {
+            try {
+                this.nextStream.close();
+            } catch (IOException var4) {
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), var4);
+                var3.fillInStackTrace();
+                throw var3;
+            }
+        }
+
+    }
+
+    final void ensureOpen() throws SQLException {
+        SQLException var1;
+        if (this.connection.lifecycle != 1) {
+            var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 8);
+            var1.fillInStackTrace();
+            throw var1;
+        } else if (this.closed) {
+            var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 9);
+            var1.fillInStackTrace();
+            throw var1;
+        }
+    }
+
+    void allocateTmpByteArray() {
+    }
+
+    public void setFetchDirection(int var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            if (var1 != 1000) {
+                if (var1 != 1001 && var1 != 1002) {
+                    SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68, "setFetchDirection");
+                    var3.fillInStackTrace();
+                    throw var3;
+                }
+
+                this.sqlWarning = DatabaseError.addSqlWarning(this.sqlWarning, 87);
+            }
+
+        }
+    }
+
+    public int getFetchDirection() throws SQLException {
+        this.ensureOpen();
+        return 1000;
+    }
+
+    public void setFetchSize(int var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            this.setPrefetchInternal(var1, false, true);
+        }
+    }
+
+    public int getFetchSize() throws SQLException {
+        this.ensureOpen();
+        return this.getPrefetchInternal(true);
+    }
+
+    public int getResultSetConcurrency() throws SQLException {
+        this.ensureOpen();
+        return this.userRsetType.getConcur();
+    }
+
+    public int getResultSetType() throws SQLException {
+        this.ensureOpen();
+        return this.userRsetType.getType();
+    }
+
+    public Connection getConnection() throws SQLException {
+        this.ensureOpen();
+        return this.connection.getWrapper();
+    }
+
+    boolean isOracleBatchStyle() {
+        return false;
+    }
+
+    void initBatch() {
+    }
+
+    int getBatchSize() {
+        return this.m_batchItems == null ? 0 : this.m_batchItems.size();
+    }
+
+    void addBatchItem(String var1) {
+        if (this.m_batchItems == null) {
+            this.m_batchItems = new Vector();
+        }
+
+        this.m_batchItems.addElement(var1);
+    }
+
+    String getBatchItem(int var1) {
+        return this.m_batchItems == null ? null : (String)this.m_batchItems.elementAt(var1);
+    }
+
+    void clearBatchItems() {
+        if (this.m_batchItems != null) {
+            this.m_batchItems.removeAllElements();
+        }
+
+    }
+
+    void checkIfJdbcBatchExists() throws SQLException {
+        if (this.getBatchSize() > 0) {
+            SQLException var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 81, "batch must be either executed or cleared");
+            var1.fillInStackTrace();
+            throw var1;
+        }
+    }
+
+    public void addBatch(String var1) throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            this.addBatchItem(var1);
+        }
+    }
+
+    public void clearBatch() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            this.clearBatchItems();
+        }
+    }
+
+    public int[] executeBatch() throws SQLException {
+        synchronized(this.connection) {
+            this.ensureOpen();
+            this.cleanUpBeforeExecute();
+            this.cleanOldTempLobs();
+            byte var2 = 0;
+            int var3 = this.getBatchSize();
+            this.checkSum = 0L;
+            this.checkSumComputationFailure = false;
+            if (var3 <= 0) {
+                return new int[0];
+            } else {
+                int[] var4 = new int[var3];
+                this.ensureOpen();
+                this.prepareForNewResults(true, true, true);
+                int var5 = this.numberOfDefinePositions;
+                String var6 = this.sqlObject.getOriginalSql();
+                SqlKind var7 = this.sqlKind;
+                this.noMoreUpdateCounts = false;
+                int var8 = 0;
+
+                try {
+                    BatchUpdateException var10;
+                    try {
+                        this.connection.registerHeartbeat();
+                        this.connection.needLine();
+
+                        for(int var29 = 0; var29 < var3; ++var29) {
+                            this.sqlObject.initialize(this.getBatchItem(var29));
+                            this.sqlKind = this.sqlObject.getSqlKind();
+                            this.needToParse = true;
+                            this.numberOfDefinePositions = 0;
+                            this.rowsProcessed = 0;
+                            this.currentRank = 1;
+                            if (this.sqlKind.isSELECT()) {
+                                BatchUpdateException var31 = DatabaseError.createBatchUpdateException(80, "invalid SELECT batch command " + var29, var29, var4);
+                                var31.fillInStackTrace();
+                                throw var31;
+                            }
+
+                            if (!this.isOpen) {
+                                this.connection.open(this);
+                                this.isOpen = true;
+                            }
+
+                            boolean var9 = true;
+
+                            int var30;
+                            try {
+                                if (this.queryTimeout != 0) {
+                                    this.connection.getTimeout().setTimeout((long)(this.queryTimeout * 1000), this);
+                                }
+
+                                this.cancelLock.enterExecuting();
+                                this.executeForRows(false);
+                                if (this.validRows > 0) {
+                                    var8 += this.validRows;
+                                }
+
+                                var30 = this.validRows;
+                            } catch (SQLException var24) {
+                                this.needToParse = true;
+                                this.resetCurrentRowBinders();
+                                throw var24;
+                            } finally {
+                                if (this.queryTimeout != 0) {
+                                    this.connection.getTimeout().cancelTimeout();
+                                }
+
+                                this.validRows = var8;
+                                this.cancelLock.exitExecuting();
+                                this.checkValidRowsStatus();
+                            }
+
+                            var4[var29] = var30;
+                            if (var4[var29] < 0) {
+                                var10 = DatabaseError.createBatchUpdateException(81, "command return value " + var4[var29], var29, var4);
+                                var10.fillInStackTrace();
+                                throw var10;
+                            }
+                        }
+                    } catch (SQLException var26) {
+                        if (var26 instanceof BatchUpdateException) {
+                            throw var26;
+                        }
+
+                        var10 = DatabaseError.createBatchUpdateException(81, var26.getMessage(), var2, var4);
+                        var10.fillInStackTrace();
+                        throw var10;
+                    }
+                } finally {
+                    this.clearBatchItems();
+                    this.numberOfDefinePositions = var5;
+                    if (var6 != null) {
+                        this.sqlObject.initialize(var6);
+                        this.sqlKind = var7;
+                    }
+
+                    this.currentRank = 0;
+                }
+
+                this.connection.registerHeartbeat();
+                return var4;
+            }
+        }
+    }
+
+    void copyDefines(OracleStatement var1, int var2) throws SQLException {
+        if (var1.columnsDefinedByUser) {
+            Accessor[] var3 = var1.accessors;
+            this.accessors = new Accessor[var3.length];
+
+            for(int var4 = 0; var4 < var3.length; ++var4) {
+                if (var3[var4] != null) {
+                    this.accessors[var4] = var3[var4].copyForDefine(this);
+                    this.accessors[var4].setCapacity(var2);
+                }
+            }
+
+            this.numberOfDefinePositions = var1.numberOfDefinePositions;
+            this.definedColumnType = var1.definedColumnType;
+            this.definedColumnSize = var1.definedColumnSize;
+            this.definedColumnFormOfUse = var1.definedColumnFormOfUse;
+            this.columnsDefinedByUser = true;
+        }
+
+    }
+
+    int copyBinds(Statement var1, int var2) throws SQLException {
+        return 0;
+    }
+
+    public void notifyCloseRset() throws SQLException {
+        this.endOfResultSet(false);
+    }
+
+    public String getOriginalSql() throws SQLException {
+        return this.sqlObject.getOriginalSql();
+    }
+
+    boolean isRowidPrepended() {
+        return this.isRowidPrepended;
+    }
+
+    void computeOffsetOfFirstUserColumn() {
+        this.offsetOfFirstUserColumn = -1;
+        if (this.sqlKind.isSELECT()) {
+            if (this.isRowidPrepended) {
+                ++this.offsetOfFirstUserColumn;
+            }
+        } else if (this.numReturnParams > 0) {
+            this.offsetOfFirstUserColumn = this.numberOfBindPositions - this.numReturnParams - 1;
+        }
+
+    }
+
+    void doScrollExecuteCommon() throws SQLException {
+        if (!this.sqlKind.isSELECT()) {
+            this.doExecuteWithTimeout();
+        } else {
+            boolean var1 = (this.realRsetType == ResultSetType.UNKNOWN ? this.userRsetType : this.realRsetType).isIdentifierRequired();
+            if (!var1) {
+                this.doExecuteWithTimeout();
+                this.computeOffsetOfFirstUserColumn();
+                this.currentResultSet = OracleResultSet.createResultSet(this);
+                this.realRsetType = this.userRsetType;
+            } else {
+                int var3;
+                Accessor var4;
+                try {
+                    this.sqlObject.setIncludeRowid(true);
+                    this.isRowidPrepended = true;
+                    this.needToParse = true;
+                    this.prepareForNewResults(true, false, true);
+                    if (this.columnsDefinedByUser) {
+                        Accessor[] var2 = this.accessors;
+                        if (this.accessors == null || this.accessors.length <= this.numberOfDefinePositions) {
+                            this.accessors = new Accessor[this.numberOfDefinePositions + 1];
+                        }
+
+                        if (var2 != null) {
+                            for(var3 = this.numberOfDefinePositions; var3 > 0; --var3) {
+                                var4 = var2[var3 - 1];
+                                this.accessors[var3] = var4;
+                                if (var4.isColumnNumberAware) {
+                                    var4.updateColumnNumber(var3);
+                                }
+                            }
+                        }
+
+                        this.allocateRowidAccessor();
+                        ++this.numberOfDefinePositions;
+                    }
+
+                    this.doExecuteWithTimeout();
+                    this.computeOffsetOfFirstUserColumn();
+                    this.currentResultSet = OracleResultSet.createResultSet(this);
+                    this.realRsetType = this.userRsetType;
+                } catch (SQLException var5) {
+                    this.realRsetType = this.userRsetType.downgrade();
+                    this.isRowidPrepended = this.realRsetType.isIdentifierRequired();
+                    this.sqlObject.setIncludeRowid(this.isRowidPrepended);
+                    this.needToParse = true;
+                    this.prepareForNewResults(true, false, true);
+                    if (this.columnsDefinedByUser) {
+                        this.needToPrepareDefineBuffer = true;
+                        --this.numberOfDefinePositions;
+                        System.arraycopy(this.accessors, 1, this.accessors, 0, this.numberOfDefinePositions);
+                        this.accessors[this.numberOfDefinePositions] = null;
+
+                        for(var3 = 0; var3 < this.numberOfDefinePositions; ++var3) {
+                            var4 = this.accessors[var3];
+                            if (var4.isColumnNumberAware) {
+                                var4.updateColumnNumber(var3);
+                            }
+                        }
+                    }
+
+                    this.moveAllTempLobsToFree();
+                    this.doExecuteWithTimeout();
+                    this.computeOffsetOfFirstUserColumn();
+                    this.currentResultSet = OracleResultSet.createResultSet(this);
+                    this.sqlWarning = DatabaseError.addSqlWarning(this.sqlWarning, 91, var5.getMessage());
+                }
+            }
+
+        }
+    }
+
+    void allocateRowidAccessor() throws SQLException {
+        this.accessors[0] = new RowidAccessor(this, 128, (short)1, -8, false);
+    }
+
+    OracleResultSet doScrollStmtExecuteQuery() throws SQLException {
+        this.doScrollExecuteCommon();
+        return this.currentResultSet;
+    }
+
+    void processDmlReturningBind() throws SQLException {
+        this.returnParamsFetched = false;
+        int var1 = 0;
+
+        for(int var2 = 0; var2 < this.numberOfBindPositions; ++var2) {
+            if (this.accessors[var2] != null) {
+                ++var1;
+            }
+        }
+
+        if (this.isAutoGeneratedKey) {
+            this.numReturnParams = var1;
+        } else {
+            if (this.numReturnParams <= 0) {
+                this.numReturnParams = this.sqlObject.getReturnParameterCount();
+            }
+
+            if (this.numReturnParams != var1) {
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 173);
+                var3.fillInStackTrace();
+                throw var3;
+            }
+        }
+
+        this.returnParamMeta[0] = this.numReturnParams;
+    }
+
+    void allocateDmlReturnStorage() {
+    }
+
+    void fetchDmlReturnParams() throws SQLException {
+        SQLException var1 = DatabaseError.createUnsupportedFeatureSqlException();
+        var1.fillInStackTrace();
+        throw var1;
+    }
+
+    void registerReturnParameterInternal(int var1, int var2, int var3, int var4, short var5, String var6) throws SQLException {
+        this.isDmlReturning = true;
+        if (this.accessors == null) {
+            this.accessors = new Accessor[this.numberOfBindPositions];
+        }
+
+        if (this.returnParamMeta == null) {
+            this.returnParamMeta = new int[3 + this.numberOfBindPositions * 4];
+        }
+
+        switch(var3) {
+            case -16:
+            case -15:
+            case -9:
+            case 2011:
+                var5 = 2;
+            case -8:
+            default:
+                break;
+            case 2009:
+                var6 = "SYS.XMLTYPE";
+        }
+
+        Accessor var7 = this.allocateAccessor(var2, var3, var1 + 1, var4, var5, var6, true);
+        var7.isDMLReturnedParam = true;
+        var7.setCapacity(this.currentCapacity);
+        this.accessors[var1] = var7;
+        boolean var8 = var7.charLength > 0;
+        this.returnParamMeta[3 + var1 * 4 + 0] = var7.defineType;
+        this.returnParamMeta[3 + var1 * 4 + 1] = var8 ? 1 : 0;
+        this.returnParamMeta[3 + var1 * 4 + 2] = var8 ? var7.charLength : var7.byteLength;
+        this.returnParamMeta[3 + var1 * 4 + 3] = var5;
+    }
+
+    /** @deprecated */
+    public int creationState() {
+        synchronized(this.connection) {
+            return this.creationState;
+        }
+    }
+
+    public boolean isColumnSetNull(int var1) {
+        return this.columnSetNull;
+    }
+
+    public boolean isNCHAR(int var1) throws SQLException {
+        if (!this.described) {
+            this.describe();
+        }
+
+        int var2 = var1 - 1;
+        if (var2 >= 0 && var2 < this.numberOfDefinePositions) {
+            boolean var4 = this.accessors[var2].formOfUse == 2;
+            return var4;
+        } else {
+            SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 3);
+            var3.fillInStackTrace();
+            throw var3;
+        }
+    }
+
+    void addChild(OracleStatement var1) {
+        var1.nextChild = this.children;
+        this.children = var1;
+        var1.parent = this;
+    }
+
+    void addImplicitResultSetStmt(OracleStatement var1) {
+        this.implicitResultSetStatements.add(var1);
+    }
+
+    void removeChild(OracleStatement var1) {
+        if (var1 == this.children) {
+            this.children = var1.nextChild;
+        } else {
+            OracleStatement var2;
+            for(var2 = this.children; var2.nextChild != var1; var2 = var2.nextChild) {
+            }
+
+            var2.nextChild = var1.nextChild;
+        }
+
+        var1.parent = null;
+        var1.nextChild = null;
+    }
+
+    public boolean getMoreResults(int var1) throws SQLException {
+        this.ensureOpen();
+        label38:
+        switch(var1) {
+            case 1:
+                if (this.currentResultSet != null && !this.currentResultSet.isClosed()) {
+                    this.currentResultSet.close();
+                }
+                break;
+            case 2:
+                if (this.currentResultSet != null && !this.currentResultSet.isClosed()) {
+                    if (this.openImplicitResultSets == null) {
+                        this.openImplicitResultSets = new ArrayDeque(this.implicitResultSetStatements.size());
+                    }
+
+                    this.openImplicitResultSets.add(this.currentResultSet);
+                    this.currentResultSet = null;
+                }
+                break;
+            case 3:
+                while(true) {
+                    if (this.openImplicitResultSets == null || this.openImplicitResultSets.size() == 0) {
+                        break label38;
+                    }
+
+                    OracleResultSet var2 = (OracleResultSet)this.openImplicitResultSets.remove();
+                    var2.close();
+                }
+            default:
+                SQLException var4 = DatabaseError.createUnsupportedFeatureSqlException();
+                var4.fillInStackTrace();
+                throw var4;
+        }
+
+        if (this.implicitResultSetIterator != null && this.implicitResultSetIterator.hasNext()) {
+            OracleStatement var3 = (OracleStatement)this.implicitResultSetIterator.next();
+            if (var3 != null) {
+                this.computeOffsetOfFirstUserColumn();
+                this.currentResultSet = OracleResultSet.createResultSet(var3);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public ResultSet getGeneratedKeys() throws SQLException {
+        synchronized(this.connection) {
+            SQLException var2;
+            if (this.closed) {
+                var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 9);
+                var2.fillInStackTrace();
+                throw var2;
+            } else if (!this.isAutoGeneratedKey) {
+                var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 90);
+                var2.fillInStackTrace();
+                throw var2;
+            } else if (this.accessors != null && this.numReturnParams != 0) {
+                if (this.currentResultSet == null) {
+                    this.isComplete = true;
+                    this.currentResultSet = new OracleReturnResultSet(this.connection, this);
+                    this.computeOffsetOfFirstUserColumn();
+                }
+
+                return this.currentResultSet;
+            } else {
+                var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 144);
+                var2.fillInStackTrace();
+                throw var2;
+            }
+        }
+    }
+
+    public int executeUpdate(String var1, int var2) throws SQLException {
+        this.cleanUpBeforeExecute();
+        this.autoKeyInfo = new AutoKeyInfo(var1);
+        if (var2 != 2 && this.autoKeyInfo.isInsertSqlStmt()) {
+            if (var2 != 1) {
+                this.autoKeyInfo = null;
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+                var3.fillInStackTrace();
+                throw var3;
+            } else {
+                synchronized(this.connection) {
+                    this.isAutoGeneratedKey = true;
+                    String var4 = this.autoKeyInfo.getNewSql();
+                    this.numberOfBindPositions = 1;
+                    this.autoKeyRegisterReturnParams();
+                    this.processDmlReturningBind();
+                    return this.executeUpdateInternal(var4);
+                }
+            }
+        } else {
+            this.autoKeyInfo = null;
+            return this.executeUpdate(var1);
+        }
+    }
+
+    public int executeUpdate(String var1, int[] var2) throws SQLException {
+        this.cleanUpBeforeExecute();
+        if (var2 != null && var2.length != 0) {
+            this.autoKeyInfo = new AutoKeyInfo(var1, var2);
+            if (!this.autoKeyInfo.isInsertSqlStmt()) {
+                this.autoKeyInfo = null;
+                return this.executeUpdate(var1);
+            } else {
+                synchronized(this.connection) {
+                    this.isAutoGeneratedKey = true;
+                    this.connection.doDescribeTable(this.autoKeyInfo);
+                    String var4 = this.autoKeyInfo.getNewSql();
+                    this.numberOfBindPositions = var2.length;
+                    this.autoKeyRegisterReturnParams();
+                    this.processDmlReturningBind();
+                    return this.executeUpdateInternal(var4);
+                }
+            }
+        } else {
+            SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+            var3.fillInStackTrace();
+            throw var3;
+        }
+    }
+
+    public int executeUpdate(String var1, String[] var2) throws SQLException {
+        this.cleanUpBeforeExecute();
+        if (var2 != null && var2.length != 0) {
+            this.autoKeyInfo = new AutoKeyInfo(var1, var2);
+            if (!this.autoKeyInfo.isInsertSqlStmt()) {
+                this.autoKeyInfo = null;
+                return this.executeUpdate(var1);
+            } else {
+                synchronized(this.connection) {
+                    this.isAutoGeneratedKey = true;
+                    this.connection.doDescribeTable(this.autoKeyInfo);
+                    String var4 = this.autoKeyInfo.getNewSql();
+                    this.numberOfBindPositions = var2.length;
+                    this.autoKeyRegisterReturnParams();
+                    this.processDmlReturningBind();
+                    return this.executeUpdateInternal(var4);
+                }
+            }
+        } else {
+            SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+            var3.fillInStackTrace();
+            throw var3;
+        }
+    }
+
+    public boolean execute(String var1, int var2) throws SQLException {
+        this.cleanUpBeforeExecute();
+        this.autoKeyInfo = new AutoKeyInfo(var1);
+        if (var2 != 2 && this.autoKeyInfo.isInsertSqlStmt()) {
+            if (var2 != 1) {
+                this.autoKeyInfo = null;
+                SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+                var3.fillInStackTrace();
+                throw var3;
+            } else {
+                synchronized(this.connection) {
+                    this.isAutoGeneratedKey = true;
+                    String var4 = this.autoKeyInfo.getNewSql();
+                    this.numberOfBindPositions = 1;
+                    this.autoKeyRegisterReturnParams();
+                    this.processDmlReturningBind();
+                    return this.executeInternal(var4);
+                }
+            }
+        } else {
+            this.autoKeyInfo = null;
+            return this.execute(var1);
+        }
+    }
+
+    public boolean execute(String var1, int[] var2) throws SQLException {
+        this.cleanUpBeforeExecute();
+        if (var2 != null && var2.length != 0) {
+            this.autoKeyInfo = new AutoKeyInfo(var1, var2);
+            if (!this.autoKeyInfo.isInsertSqlStmt()) {
+                this.autoKeyInfo = null;
+                return this.execute(var1);
+            } else {
+                synchronized(this.connection) {
+                    this.isAutoGeneratedKey = true;
+                    this.connection.doDescribeTable(this.autoKeyInfo);
+                    String var4 = this.autoKeyInfo.getNewSql();
+                    this.numberOfBindPositions = var2.length;
+                    this.autoKeyRegisterReturnParams();
+                    this.processDmlReturningBind();
+                    return this.executeInternal(var4);
+                }
+            }
+        } else {
+            SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+            var3.fillInStackTrace();
+            throw var3;
+        }
+    }
+
+    public boolean execute(String var1, String[] var2) throws SQLException {
+        this.cleanUpBeforeExecute();
+        if (var2 != null && var2.length != 0) {
+            this.autoKeyInfo = new AutoKeyInfo(var1, var2);
+            if (!this.autoKeyInfo.isInsertSqlStmt()) {
+                this.autoKeyInfo = null;
+                return this.execute(var1);
+            } else {
+                synchronized(this.connection) {
+                    this.isAutoGeneratedKey = true;
+                    this.connection.doDescribeTable(this.autoKeyInfo);
+                    String var4 = this.autoKeyInfo.getNewSql();
+                    this.numberOfBindPositions = var2.length;
+                    this.autoKeyRegisterReturnParams();
+                    this.processDmlReturningBind();
+                    return this.executeInternal(var4);
+                }
+            }
+        } else {
+            SQLException var3 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 68);
+            var3.fillInStackTrace();
+            throw var3;
+        }
+    }
+
+    public int getResultSetHoldability() throws SQLException {
+        this.ensureOpen();
+        return 1;
+    }
+
+    public int getcacheState() {
+        return this.cacheState;
+    }
+
+    public int getstatementType() {
+        return this.statementType;
+    }
+
+    public boolean getserverCursor() {
+        return this.serverCursor;
+    }
+
+    void initializeIndicatorSubRange() {
+        this.bindIndicatorSubRange = 0;
+    }
+
+    private void autoKeyRegisterReturnParams() throws SQLException {
+        if (this.currentResultSet != null) {
+            this.currentResultSet.close();
+        }
+
+        this.initializeIndicatorSubRange();
+        int var1 = this.bindIndicatorSubRange + 5 + this.numberOfBindPositions * 10;
+        int var2 = var1 + 2 * this.numberOfBindPositions;
+        this.bindIndicators = new short[var2];
+        int var3 = this.bindIndicatorSubRange;
+        this.bindIndicators[var3 + 0] = (short)this.numberOfBindPositions;
+        this.bindIndicators[var3 + 1] = 0;
+        this.bindIndicators[var3 + 2] = 1;
+        this.bindIndicators[var3 + 3] = 0;
+        this.bindIndicators[var3 + 4] = 1;
+        var3 += 5;
+        short[] var4 = this.autoKeyInfo.tableFormOfUses;
+        int[] var5 = this.autoKeyInfo.columnIndexes;
+
+        for(int var6 = 0; var6 < this.numberOfBindPositions; ++var6) {
+            this.bindIndicators[var3 + 0] = 994;
+            int var7 = this.connection.defaultnchar ? 2 : 1;
+            if (var4 != null && var5 != null && var4[var5[var6] - 1] == 2) {
+                var7 = 2;
+                this.bindIndicators[var3 + 9] = (short)var7;
+            }
+
+            var3 += 10;
+            this.checkTypeForAutoKey(this.autoKeyInfo.returnTypes[var6]);
+            String var8 = null;
+            if (this.autoKeyInfo.returnTypes[var6] == 111) {
+                var8 = this.autoKeyInfo.tableTypeNames[var5[var6] - 1];
+            }
+
+            this.registerReturnParameterInternal(var6, this.autoKeyInfo.returnTypes[var6], this.autoKeyInfo.returnTypes[var6], -1, (short)var7, var8);
+        }
+
+    }
+
+    private final void cleanUpBeforeExecute() throws SQLException {
+        if (this.currentResultSet != null && this.isCloseOnCompletion) {
+            this.currentResultSet.close();
+            SQLException var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 9);
+            var1.fillInStackTrace();
+            throw var1;
+        } else {
+            this.isAutoGeneratedKey = false;
+            this.numberOfBindPositions = 0;
+            this.bindIndicators = null;
+            this.returnParamMeta = null;
+            if (this.executeDoneForDefines) {
+                this.clearDefines();
+            } else {
+                this.executeDoneForDefines = true;
+            }
+
+        }
+    }
+
+    final void checkTypeForAutoKey(int var1) throws SQLException {
+        if (var1 == 109) {
+            SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 5);
+            var2.fillInStackTrace();
+            throw var2;
+        }
+    }
+
+    void moveAllTempLobsToFree() {
+        if (this.oldTempClobsToFree != null) {
+            if (this.tempClobsToFree == null) {
+                this.tempClobsToFree = this.oldTempClobsToFree;
+            } else {
+                this.tempClobsToFree.add(this.oldTempClobsToFree);
+            }
+
+            this.oldTempClobsToFree = null;
+        }
+
+        if (this.oldTempBlobsToFree != null) {
+            if (this.tempBlobsToFree == null) {
+                this.tempBlobsToFree = this.oldTempBlobsToFree;
+            } else {
+                this.tempBlobsToFree.add(this.oldTempBlobsToFree);
+            }
+
+            this.oldTempBlobsToFree = null;
+        }
+
+    }
+
+    void moveTempLobsToFree(CLOB var1) {
+        int var2;
+        if (this.oldTempClobsToFree != null && (var2 = this.oldTempClobsToFree.indexOf(var1)) != -1) {
+            this.addToTempLobsToFree(var1);
+            this.oldTempClobsToFree.remove(var2);
+        }
+
+    }
+
+    void moveTempLobsToFree(BLOB var1) {
+        int var2;
+        if (this.oldTempBlobsToFree != null && (var2 = this.oldTempBlobsToFree.indexOf(var1)) != -1) {
+            this.addToTempLobsToFree(var1);
+            this.oldTempBlobsToFree.remove(var2);
+        }
+
+    }
+
+    void addToTempLobsToFree(CLOB var1) {
+        if (this.tempClobsToFree == null) {
+            this.tempClobsToFree = new ArrayList();
+        }
+
+        this.tempClobsToFree.add(var1);
+    }
+
+    void addToTempLobsToFree(BLOB var1) {
+        if (this.tempBlobsToFree == null) {
+            this.tempBlobsToFree = new ArrayList();
+        }
+
+        this.tempBlobsToFree.add(var1);
+    }
+
+    void addToOldTempLobsToFree(CLOB var1) {
+        if (this.oldTempClobsToFree == null) {
+            this.oldTempClobsToFree = new ArrayList();
+        }
+
+        this.oldTempClobsToFree.add(var1);
+    }
+
+    void addToOldTempLobsToFree(BLOB var1) {
+        if (this.oldTempBlobsToFree == null) {
+            this.oldTempBlobsToFree = new ArrayList();
+        }
+
+        this.oldTempBlobsToFree.add(var1);
+    }
+
+    void cleanAllTempLobs() {
+        this.cleanTempClobs(this.tempClobsToFree);
+        this.tempClobsToFree = null;
+        this.cleanTempBlobs(this.tempBlobsToFree);
+        this.tempBlobsToFree = null;
+        this.cleanTempClobs(this.oldTempClobsToFree);
+        this.oldTempClobsToFree = null;
+        this.cleanTempBlobs(this.oldTempBlobsToFree);
+        this.oldTempBlobsToFree = null;
+    }
+
+    void cleanOldTempLobs() {
+        this.cleanTempClobs(this.oldTempClobsToFree);
+        this.cleanTempBlobs(this.oldTempBlobsToFree);
+        this.oldTempClobsToFree = this.tempClobsToFree;
+        this.tempClobsToFree = null;
+        this.oldTempBlobsToFree = this.tempBlobsToFree;
+        this.tempBlobsToFree = null;
+    }
+
+    void cleanTempClobs(ArrayList var1) {
+        if (var1 != null) {
+            Iterator var2 = var1.iterator();
+
+            while(var2.hasNext()) {
+                try {
+                    ((CLOB)((CLOB)var2.next())).freeTemporary();
+                } catch (SQLException var4) {
+                }
+            }
+        }
+
+    }
+
+    void cleanTempBlobs(ArrayList var1) {
+        if (var1 != null) {
+            Iterator var2 = var1.iterator();
+
+            while(var2.hasNext()) {
+                try {
+                    ((BLOB)((BLOB)var2.next())).freeTemporary();
+                } catch (SQLException var4) {
+                }
+            }
+        }
+
+    }
+
+    TimeZone getDefaultTimeZone() throws SQLException {
+        return this.getDefaultTimeZone(false);
+    }
+
+    TimeZone getDefaultTimeZone(boolean var1) throws SQLException {
+        if (this.defaultTimeZone == null) {
+            try {
+                this.defaultTimeZone = this.connection.getDefaultTimeZone();
+            } catch (SQLException var3) {
+            }
+
+            if (this.defaultTimeZone == null) {
+                this.defaultTimeZone = TimeZone.getDefault();
+            }
+        }
+
+        return this.defaultTimeZone;
+    }
+
+    public void setDatabaseChangeRegistration(DatabaseChangeRegistration var1) throws SQLException {
+        this.registration = (NTFDCNRegistration)var1;
+    }
+
+    public String[] getRegisteredTableNames() throws SQLException {
+        return this.dcnTableName;
+    }
+
+    public long getRegisteredQueryId() throws SQLException {
+        return this.dcnQueryId;
+    }
+
+    Calendar getDefaultCalendar() throws SQLException {
+        if (this.defaultCalendar == null) {
+            this.defaultCalendar = Calendar.getInstance(this.getDefaultTimeZone(), Locale.US);
+        }
+
+        return this.defaultCalendar;
+    }
+
+    void releaseBuffers() {
+        this.rowData.free();
+        if (this.bindData != null && this.bindData != this.rowData) {
+            this.bindData.free();
+        }
+
+    }
+
+    public boolean isClosed() throws SQLException {
+        return this.closed;
+    }
+
+    public boolean isPoolable() throws SQLException {
+        if (this.closed) {
+            SQLException var1 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 9);
+            var1.fillInStackTrace();
+            throw var1;
+        } else {
+            return this.cacheState != 3;
+        }
+    }
+
+    public void setPoolable(boolean var1) throws SQLException {
+        if (this.closed) {
+            SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 9);
+            var2.fillInStackTrace();
+            throw var2;
+        } else {
+            if (var1) {
+                this.cacheState = 1;
+            } else {
+                this.cacheState = 3;
+            }
+
+        }
+    }
+
+    public boolean isWrapperFor(Class<?> var1) throws SQLException {
+        if (var1.isInterface()) {
+            return var1.isInstance(this);
+        } else {
+            SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 177);
+            var2.fillInStackTrace();
+            throw var2;
+        }
+    }
+
+    public <T> T unwrap(Class<T> var1) throws SQLException {
+        if (var1.isInterface() && var1.isInstance(this)) {
+            return (T) this;
+        } else {
+            SQLException var2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 177);
+            var2.fillInStackTrace();
+            throw var2;
+        }
+    }
+
+    <T> T getObject(int var1, int var2, Class<T> var3) throws SQLException {
+        this.lastIndex = var2;
+        if (this.streamList != null) {
+            this.closeUsedStreams(var2);
+        }
+
+        return this.accessors[var2 - 1].getObject(var1 - this.indexOfFirstRow, var3);
+    }
+
+    RowId getPrependedRowId(int var1) throws SQLException {
+        assert this.isRowidPrepended : "no rowid";
+
+        return this.accessors[0].getROWID(var1 - this.indexOfFirstRow);
+    }
+
+    AuthorizationIndicator getAuthorizationIndicator(int var1, int var2) throws SQLException {
+        this.lastIndex = var2;
+        if (this.streamList != null) {
+            this.closeUsedStreams(var2);
+        }
+
+        return this.accessors[var2 - 1].getAuthorizationIndicator(var1 - this.indexOfFirstRow);
+    }
+
+    protected OracleConnection getConnectionDuringExceptionHandling() {
+        return this.connection;
+    }
+
+    Calendar getGMTCalendar() {
+        if (this.gmtCalendar == null) {
+            this.gmtCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"), Locale.US);
+        }
+
+        return this.gmtCalendar;
+    }
+
+    void extractNioDefineBuffers(int var1) throws SQLException {
+    }
+
+    void processLobPrefetchMetaData(Object[] var1) {
+    }
+
+    void internalClose() throws SQLException {
+        this.closed = true;
+        if (this.currentResultSet != null) {
+            this.currentResultSet.closed = true;
+        }
+
+        this.cleanupDefines();
+        this.bindBytes = null;
+        this.bindChars = null;
+        this.bindIndicators = null;
+        this.outBindAccessors = null;
+        this.parameterStream = (InputStream[][])null;
+        this.userStream = (Object[][])null;
+        this.ibtBindBytes = null;
+        this.ibtBindChars = null;
+        this.ibtBindIndicators = null;
+        this.lobPrefetchMetaData = null;
+        this.tmpByteArray = null;
+        this.definedColumnType = null;
+        this.definedColumnSize = null;
+        this.definedColumnFormOfUse = null;
+        if (this.wrapper != null) {
+            this.wrapper.close();
+        }
+
+    }
+
+    void calculateCheckSum() throws SQLException {
+        if (this.connection.checksumMode.needToCalculateFetchChecksum()) {
+            this.localCheckSum = this.checkSum;
+            if (this.accessors != null && !this.isDmlReturning) {
+                this.accessorChecksum(this.accessors);
+            }
+
+            if (this.outBindAccessors != null) {
+                this.accessorChecksum(this.outBindAccessors);
+            }
+
+            if (this.accessors != null && this.returnParamsFetched && this.isDmlReturning) {
+                this.accessorChecksum(this.accessors);
+            }
+
+            CRC64 var10001 = PhysicalConnection.CHECKSUM;
+            this.localCheckSum = CRC64.updateChecksum(this.localCheckSum, (long)this.validRows);
+            this.checkSum = this.localCheckSum;
+            this.localCheckSum = 0L;
+        }
+    }
+
+    void accessorChecksum(Accessor[] var1) throws SQLException {
+        int var2 = 0;
+        boolean var3 = false;
+        Accessor[] var4 = var1;
+        int var5 = var1.length;
+
+        label37:
+        for(int var6 = 0; var6 < var5; ++var6) {
+            Accessor var7 = var4[var6];
+            if (var7 != null) {
+                switch(var7.internalType) {
+                    case 8:
+                    case 24:
+                        var3 = false;
+                        break label37;
+                    case 112:
+                    case 113:
+                    case 114:
+                        if (var2 == 0) {
+                            var3 = true;
+                        }
+                        break;
+                    default:
+                        var3 = false;
+                        ++var2;
+
+                        for(int var8 = 0; var8 < this.validRows; ++var8) {
+                            if (var7.rowSpaceIndicator != null) {
+                                this.localCheckSum = var7.updateChecksum(this.localCheckSum, var8);
+                            }
+                        }
+                }
+            }
+        }
+
+        if (var3) {
+            this.checkSumComputationFailure = true;
+        }
+
+    }
+
+    public long getChecksum() throws SQLException {
+        if (this.checkSumComputationFailure) {
+            SQLException var1 = DatabaseError.createUnsupportedFeatureSqlException();
+            var1.fillInStackTrace();
+            throw var1;
+        } else {
+            return this.checkSum;
+        }
+    }
+
+    public void registerBindChecksumListener(BindChecksumListener var1) throws SQLException {
+        this.bindChecksumListener = var1;
+    }
+
+    public void closeOnCompletion() throws SQLException {
+        this.isCloseOnCompletion = true;
+    }
+
+    public boolean isCloseOnCompletion() throws SQLException {
+        return this.isCloseOnCompletion;
+    }
+
+    public void setACProxy(Object var1) {
+        this.acProxy = var1;
+    }
+
+    public Object getACProxy() {
+        return this.acProxy;
+    }
+
+    static {
+        DEFAULT_RESULT_SET_TYPE = ResultSetType.FORWARD_READ_ONLY;
+        _Copyright_2007_Oracle_All_Rights_Reserved_ = null;
+    }
+}
