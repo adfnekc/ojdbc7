@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Locale.Category;
@@ -149,8 +150,8 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
    private T4CKvaldfList keyValList = null;
    private byte[] user = null;
    private long logonMode;
-   private byte[][] outKeys = (byte[][])null;
-   private byte[][] outValues = (byte[][])null;
+   private byte[][] outKeys = (byte[][]) null;
+   private byte[][] outValues = (byte[][]) null;
    private int[] outFlags = new int[0];
    private int outNbPairs = 0;
    O5Logon o5logonHelper = new O5Logon();
@@ -159,7 +160,7 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
    public static final boolean TRACE = false;
 
    T4CTTIoauthenticate(T4CConnection var1, String var2, byte[] var3) throws SQLException {
-      super(var1, (byte)3);
+      super(var1, (byte) 3);
       this.ressourceManagerId = var2;
       this.serverCompileTimeCapabilities = var3;
       this.setSessionFields(var1);
@@ -178,35 +179,38 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
 
       this.meg.marshalUB4(this.logonMode);
       this.meg.marshalPTR();
-      this.meg.marshalUB4((long)this.keyValList.size());
+      this.meg.marshalUB4((long) this.keyValList.size());
       this.meg.marshalPTR();
       this.meg.marshalPTR();
       if (this.user != null && this.user.length > 0) {
          this.meg.marshalCHR(this.user);
       }
 
-      this.meg.marshalKEYVAL(this.keyValList.getKeys(), this.keyValList.getValues(), this.keyValList.getFlags(), this.keyValList.size());
+      this.meg.marshalKEYVAL(this.keyValList.getKeys(), this.keyValList.getValues(), this.keyValList.getFlags(),
+            this.keyValList.size());
    }
 
-   private void doOAUTH(byte[] var1, byte[] var2, long var3, String var5, boolean var6, byte[] var7, byte[] var8, byte[][] var9, int var10, int var11) throws IOException, SQLException {
-      this.setFunCode((short)115);
-      this.user = var1;
-      this.logonMode = var3 | 1L;
+   private void doOAUTHRPC(byte[] username, byte[] AUTH_PASSWORD, long logonMode, String RADIUS, boolean var6,
+         byte[] var7, byte[] var8, byte[][] var9, int var10, int var11) throws IOException, SQLException {
+      System.out.println("doOAUTHRPC");
+      this.setFunCode((short) 115);
+      this.user = username;
+      this.logonMode = logonMode | 1L;
       if (var6) {
          this.logonMode |= 1024L;
       }
 
-      if (var1 != null && var1.length != 0 && var2 != null && var5 != "RADIUS") {
+      if (username != null && username.length != 0 && AUTH_PASSWORD != null && RADIUS != "RADIUS") {
          this.logonMode |= 256L;
       }
 
       this.keyValList = new T4CKvaldfList(this.meg.conv);
-      if (var2 != null) {
-         this.keyValList.add("AUTH_PASSWORD", var2);
+      if (AUTH_PASSWORD != null) {
+         this.keyValList.add("AUTH_PASSWORD", AUTH_PASSWORD);
       }
 
       if (var9 != null) {
-         for(int var12 = 0; var12 < var9.length; ++var12) {
+         for (int var12 = 0; var12 < var9.length; ++var12) {
             this.keyValList.add("INITIAL_CLIENT_ROLE", var9[var12]);
          }
       }
@@ -221,7 +225,7 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
 
       this.keyValList.add("AUTH_TERMINAL", this.terminal);
       if (this.bUseO5Logon && this.encryptedKB != null) {
-         this.keyValList.add((String)"AUTH_SESSKEY", this.encryptedKB, (byte)1);
+         this.keyValList.add((String) "AUTH_SESSKEY", this.encryptedKB, (byte) 1);
       }
 
       if (this.programName != null) {
@@ -244,14 +248,15 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       }
 
       this.keyValList.add("AUTH_ACL", this.aclValue);
-      this.keyValList.add((String)"AUTH_ALTER_SESSION", this.alterSession, (byte)1);
+      this.keyValList.add((String) "AUTH_ALTER_SESSION", this.alterSession, (byte) 1);
       if (this.editionName != null) {
          this.keyValList.add("AUTH_ORA_EDITION", this.editionName);
       }
 
       this.keyValList.add("SESSION_CLIENT_LOBATTR", this.enableTempLobRefCnt);
       this.keyValList.add("SESSION_CLIENT_DRIVER_NAME", this.driverName);
-      this.keyValList.add("SESSION_CLIENT_VERSION", this.meg.conv.StringToCharBytes(Integer.toString(this.versionStringToInt(this.connection.getMetaData().getDriverVersion()), 10)));
+      this.keyValList.add("SESSION_CLIENT_VERSION", this.meg.conv.StringToCharBytes(
+            Integer.toString(this.versionStringToInt(this.connection.getMetaData().getDriverVersion()), 10)));
       if (var10 != -1) {
          this.keyValList.add("AUTH_SESSION_ID", this.meg.conv.StringToCharBytes(Integer.toString(var10)));
       }
@@ -261,26 +266,29 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       }
 
       if (this.connection.drcpEnabled) {
-         this.keyValList.add("AUTH_KPPL_CONN_CLASS", this.meg.conv.StringToCharBytes(this.connection.drcpConnectionClass));
+         this.keyValList.add("AUTH_KPPL_CONN_CLASS",
+               this.meg.conv.StringToCharBytes(this.connection.drcpConnectionClass));
          this.keyValList.add("AUTH_KPPL_PURITY", this.meg.conv.StringToCharBytes("2"));
          if (this.connection.drcpTagName != null) {
             this.keyValList.add("AUTH_KPPL_TAG", this.meg.conv.StringToCharBytes(this.connection.drcpTagName));
          }
       }
 
-      this.keyValList.add("AUTH_CONNECT_STRING", this.meg.conv.StringToCharBytes(this.connection.net.getConnectionString()));
-      this.keyValList.add("AUTH_COPYRIGHT", this.meg.conv.StringToCharBytes("\"Oracle\nEverybody follows\nSpeedy bits exchange\nStars await to glow\"\nThe preceding key is copyrighted by Oracle Corporation.\nDuplication of this key is not allowed without permission\nfrom Oracle Corporation. Copyright 2003 Oracle Corporation."));
+      this.keyValList.add("AUTH_CONNECT_STRING",
+            this.meg.conv.StringToCharBytes(this.connection.net.getConnectionString()));
+      this.keyValList.add("AUTH_COPYRIGHT", this.meg.conv.StringToCharBytes(
+            "\"Oracle\nEverybody follows\nSpeedy bits exchange\nStars await to glow\"\nThe preceding key is copyrighted by Oracle Corporation.\nDuplication of this key is not allowed without permission\nfrom Oracle Corporation. Copyright 2003 Oracle Corporation."));
       this.outNbPairs = 0;
-      this.outKeys = (byte[][])null;
-      this.outValues = (byte[][])null;
+      this.outKeys = (byte[][]) null;
+      this.outValues = (byte[][]) null;
       this.outFlags = new int[0];
       this.doRPC();
    }
 
-   void doOSESSKEY(String var1, long var2) throws IOException, SQLException {
-      this.setFunCode((short)118);
-      this.user = this.meg.conv.StringToCharBytes(var1);
-      this.logonMode = var2 | 1L;
+   void doOSESSKEY(String username, long logonMode) throws IOException, SQLException {
+      this.setFunCode((short) 118);
+      this.user = this.meg.conv.StringToCharBytes(username);
+      this.logonMode = logonMode | 1L;
       this.keyValList = new T4CKvaldfList(this.meg.conv);
       this.keyValList.add("AUTH_TERMINAL", this.terminal);
       if (this.programName != null) {
@@ -291,8 +299,8 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       this.keyValList.add("AUTH_PID", this.processID);
       this.keyValList.add("AUTH_SID", this.sysUserName);
       this.outNbPairs = 0;
-      this.outKeys = (byte[][])null;
-      this.outValues = (byte[][])null;
+      this.outKeys = (byte[][]) null;
+      this.outValues = (byte[][]) null;
       this.outFlags = new int[0];
       this.doRPC();
    }
@@ -322,7 +330,7 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       if (this.getFunCode() == 115) {
          Properties var1 = new Properties();
 
-         for(var2 = 0; var2 < this.outNbPairs; ++var2) {
+         for (var2 = 0; var2 < this.outNbPairs; ++var2) {
             String var3 = this.meg.conv.CharBytesToString(this.outKeys[var2], this.outKeys[var2].length).trim();
             var4 = "";
             if (this.outValues[var2] != null) {
@@ -357,7 +365,7 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
          var2 = -1;
 
          try {
-            for(var10 = 0; var10 < this.outKeys.length; ++var10) {
+            for (var10 = 0; var10 < this.outKeys.length; ++var10) {
                var4 = new String(this.outKeys[var10], "US-ASCII");
                if (var4.equals("AUTH_SESSKEY")) {
                   var7 = var10;
@@ -395,186 +403,194 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
 
    }
 
-   void doOAUTH(String var1, String var2, long var3) throws IOException, SQLException {
-      byte[] var5 = null;
-      if (var1 != null && var1.length() > 0) {
-         var5 = this.meg.conv.StringToCharBytes(var1);
+   void doOAUTH(String username, String password, long logon_mode) throws IOException, SQLException {
+      byte[] username_byte = null;
+      if (username != null && username.length() > 0) {
+         username_byte = this.meg.conv.StringToCharBytes(username);
       }
 
-      byte[] var6 = null;
+      byte[] password_byte = null;
       Object var7 = null;
-      byte[] var8 = null;
-      String var9 = this.connection.net.getAuthenticationAdaptorName();
-      SQLException var22;
-      if (var1 != null && var1.length() != 0) {
-         if (var9 != "RADIUS" && this.encryptedSK.length > 16 && !this.bUseO5Logon) {
-            var22 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 413);
-            var22.fillInStackTrace();
-            throw var22;
+      byte[] AUTH_PASSWORD = null;
+      String RADIUS = this.connection.net.getAuthenticationAdaptorName();
+      SQLException err;
+      if (username != null && username.length() != 0) {
+         if (RADIUS != "RADIUS" && this.encryptedSK.length > 16 && !this.bUseO5Logon) {
+            err = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 413);
+            err.fillInStackTrace();
+            throw err;
          }
 
-         if (this.bUseO5Logon && (this.encryptedSK == null || this.encryptedSK.length != 64 && this.encryptedSK.length != 96)) {
-            var22 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 413);
-            var22.fillInStackTrace();
-            throw var22;
+         if (this.bUseO5Logon
+               && (this.encryptedSK == null || this.encryptedSK.length != 64 && this.encryptedSK.length != 96)) {
+            err = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 413);
+            err.fillInStackTrace();
+            throw err;
          }
 
-         String var11 = var1.trim();
+         String var11 = username.trim();
          String var12 = null;
-         if (var2 != null) {
-            var12 = var2.trim();
+         if (password != null) {
+            var12 = password.trim();
          }
 
-         var2 = null;
-         String var13 = var11;
-         String var14 = var12;
+         password = null;
+         String username_fixed = var11;
+         String password_fixed = var12;
          if (var11.startsWith("\"") || var11.endsWith("\"")) {
-            var13 = this.removeQuotes(var11);
+            username_fixed = this.removeQuotes(var11);
          }
 
          if (var12 != null && var12.startsWith("\"") && var12.endsWith("\"")) {
-            var14 = this.removeQuotes(var12);
+            password_fixed = this.removeQuotes(var12);
          }
 
-         if (var14 != null) {
-            var6 = this.meg.conv.StringToCharBytes(var14);
+         if (password_fixed != null) {
+            password_byte = this.meg.conv.StringToCharBytes(password_fixed);
          }
 
          byte var10;
          byte[] var21;
-         if (var9 != "RADIUS") {
-            if (var6 == null) {
-               var8 = null;
+         if (RADIUS != "RADIUS") {
+            if (password_byte == null) {
+               AUTH_PASSWORD = null;
             } else {
-               byte[] var16;
+               byte[] empty_256_bytes;
                if (this.bUseO5Logon) {
-                  if (this.verifierType != 2361 && this.verifierType != 40674 && this.verifierType != 59694 && this.verifierType != 45394 && this.verifierType != 6949 && this.verifierType != 18453) {
-                     SQLException var26 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 451);
-                     var26.fillInStackTrace();
-                     throw var26;
+                  if (this.verifierType != 2361 && this.verifierType != 40674 && this.verifierType != 59694
+                        && this.verifierType != 45394 && this.verifierType != 6949 && this.verifierType != 18453) {
+                     SQLException sqlErr = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(),
+                           451);
+                     sqlErr.fillInStackTrace();
+                     throw sqlErr;
                   }
 
                   this.encryptedKB = new byte[this.encryptedSK.length];
 
-                  for(int var15 = 0; var15 < this.encryptedKB.length; ++var15) {
-                     this.encryptedKB[var15] = 1;
+                  for (int i = 0; i < this.encryptedKB.length; ++i) {
+                     this.encryptedKB[i] = 1;
                   }
 
-                  int[] var25 = new int[1];
-                  var16 = new byte[256];
+                  int[] len_64 = new int[1];
+                  empty_256_bytes = new byte[256];
 
-                  for(int var17 = 0; var17 < 256; ++var17) {
-                     var16[var17] = 0;
+                  for (int i = 0; i < 256; ++i) {
+                     empty_256_bytes[i] = 0;
                   }
+                  len_64[0] = 64;
 
                   try {
-                     this.o5logonHelper.generateOAuthResponse(this.verifierType, this.salt, var13, var14, var6, this.encryptedSK, this.encryptedKB, var16, var25, this.meg.conv.isServerCSMultiByte, this.serverCompileTimeCapabilities[4]);
+                     System.out.printf("encryptedSK: %s\n", Arrays.toString(this.encryptedSK));
+                     this.o5logonHelper.generateOAuthResponse(this.verifierType, this.salt, username_fixed,
+                           password_fixed, password_byte, this.encryptedSK, this.encryptedKB, empty_256_bytes, len_64,
+                           this.meg.conv.isServerCSMultiByte, this.serverCompileTimeCapabilities[4]);
                   } catch (Exception var20) {
                   }
-
-                  var8 = new byte[var25[0]];
-                  System.arraycopy(var16, 0, var8, 0, var25[0]);
+                  AUTH_PASSWORD = new byte[len_64[0]];
+                  System.arraycopy(empty_256_bytes, 0, AUTH_PASSWORD, 0, len_64[0]);
                } else {
                   O3LoginClientHelper var27 = new O3LoginClientHelper(this.meg.conv.isServerCSMultiByte);
-                  var16 = var27.getSessionKey(var13, var14, this.encryptedSK);
-                  if (var6.length % 8 > 0) {
-                     var10 = (byte)(8 - var6.length % 8);
+                  empty_256_bytes = var27.getSessionKey(username_fixed, password_fixed, this.encryptedSK);
+                  if (password_byte.length % 8 > 0) {
+                     var10 = (byte) (8 - password_byte.length % 8);
                   } else {
                      var10 = 0;
                   }
 
-                  var21 = new byte[var6.length + var10];
-                  System.arraycopy(var6, 0, var21, 0, var6.length);
-                  byte[] var30 = var27.getEPasswd(var16, var21);
-                  var8 = new byte[2 * var21.length + 1];
-                  if (var8.length < 2 * var30.length) {
-                     SQLException var18 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 413);
+                  var21 = new byte[password_byte.length + var10];
+                  System.arraycopy(password_byte, 0, var21, 0, password_byte.length);
+                  byte[] var30 = var27.getEPasswd(empty_256_bytes, var21);
+                  AUTH_PASSWORD = new byte[2 * var21.length + 1];
+                  if (AUTH_PASSWORD.length < 2 * var30.length) {
+                     SQLException var18 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(),
+                           413);
                      var18.fillInStackTrace();
                      throw var18;
                   }
 
-                  RepConversion.bArray2Nibbles(var30, var8);
-                  var8[var8.length - 1] = RepConversion.nibbleToHex(var10);
+                  RepConversion.bArray2Nibbles(var30, AUTH_PASSWORD);
+                  AUTH_PASSWORD[AUTH_PASSWORD.length - 1] = RepConversion.nibbleToHex(var10);
                }
             }
-         } else if (var6 != null) {
+         } else if (password_byte != null) {
             if (this.connection.net.getSessionAttributes().getNTAdapter() instanceof TcpsNTAdapter) {
-               var8 = var6;
+               AUTH_PASSWORD = password_byte;
             } else {
-               if ((var6.length + 1) % 8 > 0) {
-                  var10 = (byte)(8 - (var6.length + 1) % 8);
+               if ((password_byte.length + 1) % 8 > 0) {
+                  var10 = (byte) (8 - (password_byte.length + 1) % 8);
                } else {
                   var10 = 0;
                }
 
-               var21 = new byte[var6.length + 1 + var10];
-               System.arraycopy(var6, 0, var21, 0, var6.length);
+               var21 = new byte[password_byte.length + 1 + var10];
+               System.arraycopy(password_byte, 0, var21, 0, password_byte.length);
                byte[] var28 = AuthenticationService.obfuscatePasswordForRadius(var21);
-               var8 = new byte[var28.length * 2];
+               AUTH_PASSWORD = new byte[var28.length * 2];
 
-               for(int var32 = 0; var32 < var28.length; ++var32) {
-                  byte var29 = (byte)((var28[var32] & 240) >> 4);
-                  byte var31 = (byte)(var28[var32] & 15);
-                  var8[var32 * 2] = (byte)(var29 < 10 ? var29 + 48 : var29 - 10 + 97);
-                  var8[var32 * 2 + 1] = (byte)(var31 < 10 ? var31 + 48 : var31 - 10 + 97);
+               for (int var32 = 0; var32 < var28.length; ++var32) {
+                  byte var29 = (byte) ((var28[var32] & 240) >> 4);
+                  byte var31 = (byte) (var28[var32] & 15);
+                  AUTH_PASSWORD[var32 * 2] = (byte) (var29 < 10 ? var29 + 48 : var29 - 10 + 97);
+                  AUTH_PASSWORD[var32 * 2 + 1] = (byte) (var31 < 10 ? var31 + 48 : var31 - 10 + 97);
                }
             }
          }
       }
+      // System.out.printf("username_byte:%s, AUTH_PASSWORD:%s, logon_mode\n",username_byte, AUTH_PASSWORD, logon_mode);
+      this.doOAUTHRPC(username_byte, AUTH_PASSWORD, logon_mode, RADIUS, false, (byte[]) null, (byte[]) null,
+            (byte[][]) null, -1, -1);
+      if (RADIUS != "RADIUS" && this.bUseO5Logon) {
+         String AUTH_SVR_RESPONSE = this.connection.sessionProperties.getProperty("AUTH_SVR_RESPONSE");
 
-      this.doOAUTH(var5, var8, var3, var9, false, (byte[])null, (byte[])null, (byte[][])null, -1, -1);
-      if (var9 != "RADIUS" && this.bUseO5Logon) {
-         String var23 = this.connection.sessionProperties.getProperty("AUTH_SVR_RESPONSE");
-
+         System.out.printf("AUTH_SVR_RESPONSE: %s\n",AUTH_SVR_RESPONSE);
          try {
-            if (!this.o5logonHelper.validateServerIdentity(var23)) {
-               var22 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 452);
-               var22.fillInStackTrace();
-               throw var22;
+            if (!this.o5logonHelper.validateServerIdentity(AUTH_SVR_RESPONSE)) {
+               err = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 452);
+               err.fillInStackTrace();
+               throw err;
             }
          } catch (Exception var19) {
-            SQLException var24 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 452);
-            var24.fillInStackTrace();
-            throw var24;
+            SQLException err2 = DatabaseError.createSqlException(this.getConnectionDuringExceptionHandling(), 452);
+            err2.fillInStackTrace();
+            throw err2;
          }
       }
-
    }
 
    void doOAUTH(int var1, Properties var2, int var3, int var4) throws IOException, SQLException {
       byte[] var5 = null;
       byte[] var6 = null;
       String[] var7 = null;
-      byte[][] var8 = (byte[][])null;
+      byte[][] PROXY_ROLES_bytes = (byte[][]) null;
       byte[] var9 = null;
-      String var10;
-      String var11;
+      String PROXY_USER_NAME;
+      String PROXY_USER_PASSWORD;
       if (var1 == 1) {
-         var10 = var2.getProperty("PROXY_USER_NAME");
-         var11 = var2.getProperty("PROXY_USER_PASSWORD");
-         if (var11 != null) {
-            var10 = var10 + "/" + var11;
+         PROXY_USER_NAME = var2.getProperty("PROXY_USER_NAME");
+         PROXY_USER_PASSWORD = var2.getProperty("PROXY_USER_PASSWORD");
+         if (PROXY_USER_PASSWORD != null) {
+            PROXY_USER_NAME = PROXY_USER_NAME + "/" + PROXY_USER_PASSWORD;
          }
 
-         var9 = this.meg.conv.StringToCharBytes(var10);
+         var9 = this.meg.conv.StringToCharBytes(PROXY_USER_NAME);
       } else if (var1 == 2) {
-         var10 = var2.getProperty("PROXY_DISTINGUISHED_NAME");
-         var5 = this.meg.conv.StringToCharBytes(var10);
+         PROXY_USER_NAME = var2.getProperty("PROXY_DISTINGUISHED_NAME");
+         var5 = this.meg.conv.StringToCharBytes(PROXY_USER_NAME);
       } else {
          try {
-            var6 = (byte[])((byte[])var2.get("PROXY_CERTIFICATE"));
+            var6 = (byte[]) ((byte[]) var2.get("PROXY_CERTIFICATE"));
             StringBuffer var16 = new StringBuffer();
 
-            for(int var13 = 0; var13 < var6.length; ++var13) {
-               var11 = Integer.toHexString(255 & var6[var13]);
-               int var12 = var11.length();
+            for (int var13 = 0; var13 < var6.length; ++var13) {
+               PROXY_USER_PASSWORD = Integer.toHexString(255 & var6[var13]);
+               int var12 = PROXY_USER_PASSWORD.length();
                if (var12 == 0) {
                   var16.append("00");
                } else if (var12 == 1) {
                   var16.append('0');
-                  var16.append(var11);
+                  var16.append(PROXY_USER_PASSWORD);
                } else {
-                  var16.append(var11);
+                  var16.append(PROXY_USER_PASSWORD);
                }
             }
 
@@ -584,19 +600,19 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       }
 
       try {
-         var7 = (String[])((String[])var2.get("PROXY_ROLES"));
+         var7 = (String[]) ((String[]) var2.get("PROXY_ROLES"));
       } catch (Exception var14) {
       }
 
       if (var7 != null) {
-         var8 = new byte[var7.length][];
+         PROXY_ROLES_bytes = new byte[var7.length][];
 
-         for(int var17 = 0; var17 < var7.length; ++var17) {
-            var8[var17] = this.meg.conv.StringToCharBytes(var7[var17]);
+         for (int i = 0; i < var7.length; ++i) {
+            PROXY_ROLES_bytes[i] = this.meg.conv.StringToCharBytes(var7[i]);
          }
       }
 
-      this.doOAUTH(var9, (byte[])null, 0L, (String)null, true, var5, var6, var8, var3, var4);
+      this.doOAUTHRPC(var9, (byte[]) null, 0L, (String) null, true, var5, var6, PROXY_ROLES_bytes, var3, var4);
    }
 
    private void setSessionFields(T4CConnection var1) throws SQLException {
@@ -649,20 +665,22 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
 
       this.driverName = this.meg.conv.StringToCharBytes(var10);
       TimeZone var13 = TimeZone.getDefault();
-      String var14 = var13.getID();
-      if (!ZONEIDMAP.isValidRegion(var14) || !var1.timezoneAsRegion) {
+      String timezone = var13.getID();// Asia/Shanghai
+      if (!ZONEIDMAP.isValidRegion(timezone) || !var1.timezoneAsRegion) {
          int var15 = var13.getOffset(System.currentTimeMillis());
          int var16 = var15 / 3600000;
-         int var17 = var15 / '\uea60' % 60;
-         var14 = (var16 < 0 ? "" + var16 : "+" + var16) + (var17 < 10 ? ":0" + var17 : ":" + var17);
+         int maybe_hour = var15 / '\uea60' % 60;
+         timezone = (var16 < 0 ? "" + var16 : "+" + var16) + (maybe_hour < 10 ? ":0" + maybe_hour : ":" + maybe_hour);
       }
 
-      this.sessionTimeZone = var14;
-      var1.sessionTimeZone = var14;
+      this.sessionTimeZone = timezone;
+      var1.sessionTimeZone = timezone;
       String var19 = CharacterSetMetaData.getNLSLanguage(Locale.getDefault(Category.FORMAT));
       String var20 = CharacterSetMetaData.getNLSTerritory(Locale.getDefault(Category.FORMAT));
       if (var19 != null && var20 != null) {
-         this.alterSession = this.meg.conv.StringToCharBytes("ALTER SESSION SET " + (this.isSessionTZ ? "TIME_ZONE='" + this.sessionTimeZone + "'" : "") + " NLS_LANGUAGE='" + var19 + "' NLS_TERRITORY='" + var20 + "' ");
+         this.alterSession = this.meg.conv.StringToCharBytes(
+               "ALTER SESSION SET " + (this.isSessionTZ ? "TIME_ZONE='" + this.sessionTimeZone + "'" : "")
+                     + " NLS_LANGUAGE='" + var19 + "' NLS_TERRITORY='" + var20 + "' ");
          this.aclValue = this.meg.conv.StringToCharBytes("4400");
          this.alterSession[this.alterSession.length - 1] = 0;
       } else {
@@ -677,14 +695,14 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       int var3 = var1.length() - 1;
 
       int var4;
-      for(var4 = 0; var4 < var1.length(); ++var4) {
+      for (var4 = 0; var4 < var1.length(); ++var4) {
          if (var1.charAt(var4) != '"') {
             var2 = var4;
             break;
          }
       }
 
-      for(var4 = var1.length() - 1; var4 >= 0; --var4) {
+      for (var4 = var1.length() - 1; var4 >= 0; --var4) {
          if (var1.charAt(var4) != '"') {
             var3 = var4;
             break;
@@ -720,7 +738,8 @@ final class T4CTTIoauthenticate extends T4CTTIfun {
       return this.connection;
    }
 
-   public byte[] getDerivedKeyJdbc(byte[] var1, int var2) throws NoSuchAlgorithmException, InvalidKeySpecException, SQLException {
+   public byte[] getDerivedKeyJdbc(byte[] var1, int var2)
+         throws NoSuchAlgorithmException, InvalidKeySpecException, SQLException {
       if (this.verifierType == 2361) {
          var2 |= 1;
       } else {

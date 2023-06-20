@@ -1,6 +1,6 @@
 package oracle.security.o5logon;
 
-public final class a {
+public final class someCrypto {
    private int a = 1;
    private int b = 1;
    private int c = 1;
@@ -24,13 +24,13 @@ public final class a {
    private static char[] u;
    private static char[] v;
 
-   public a(int var1, int var2) {
+   public someCrypto(int var1, int var2) {
       this.a = 1;
       this.b = var1;
       this.c = var2;
    }
 
-   public final void a(byte[] var1) throws b {
+   public final void sum_a(byte[] var1) throws b {
       byte var2 = 0;
       if (this.b == 1) {
          var2 = 16;
@@ -46,7 +46,7 @@ public final class a {
       } else {
          System.arraycopy(var1, 0, var3, 0, var2);
          byte[] var11 = var3;
-         a var9 = this;
+         someCrypto var9 = this;
          byte[][] var5 = new byte[var3.length / 4][4];
          byte var10 = 0;
 
@@ -139,7 +139,7 @@ public final class a {
       }
    }
 
-   public final byte[] b(byte[] var1) throws b {
+   public final byte[] sum_b(byte[] var1) throws b {
       if (var1 == null) {
          return null;
       } else if (var1.length == 0) {
